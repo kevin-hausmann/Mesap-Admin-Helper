@@ -1,0 +1,76 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.DeleteValues"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Setter Property="Margin" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsInput}" Value="True">
+                    <Setter Property="Foreground" Value="Black" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsInput}" Value="False">
+                    <Setter Property="Foreground" Value="Gray" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=HasAnnex}" Value="Ja">
+                    <Setter Property="Background" Value="Orange" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Label Margin="5">Zeitreihen ID:</Label>
+            <TextBox Name="_TimeSeriesTextBox" Width="250" Margin="5" VerticalContentAlignment="Center" />
+            <Button Margin="5" Click="ShowValues">
+                Werte anzeigen!
+            </Button>
+            <Label Name="_TimeSeriesNameLabel" Margin="5" />
+        </StackPanel>
+        <ListView Name="_ValuesListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Wert löschen" Click="DeleteSelectedValue">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Alle DEL-Werte löschen" Click="DeleteAllDELValues">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Alle ERR-Werte löschen" Click="DeleteAllERRValues">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Alle eingetragenen Werte löschen" Click="DeleteAllInputValues">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Alle berechneten Werte löschen" Click="DeleteAllResultValues">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Historie konsolidieren" Click="ConsolidateHistory" />
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Zeitpunkt, Type (Szenario)" Width="300" DisplayMemberBinding="{Binding Path=Timepoint}" />
+                    <GridViewColumn Header="Wert" Width="150" DisplayMemberBinding="{Binding Path=Value}" />
+                    <GridViewColumn Header="Einträge in Historie" Width="350" DisplayMemberBinding="{Binding Path=History}" />
+                    <GridViewColumn Header="Kommentar" DisplayMemberBinding="{Binding Path=HasAnnex}" />
+                    <GridViewColumn Header="Geändert am" DisplayMemberBinding="{Binding Path=ChangeDate}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

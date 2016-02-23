@@ -1,0 +1,81 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.SuspiciousEmissions"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:swf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+    xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration">
+    <UserControl.Resources>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Button Name="_StartSearchButton" Margin="5" Click="SearchSuspiciousEmissions">
+                Emissionszeitreihen untersuchen!
+            </Button>
+            <Label Width="80" Margin="20,5,5,5">
+                Einstellungen:
+            </Label>
+            <Button Name="_SetFilterButton" Margin="5" Click="SetFilter">Filter definieren...</Button>
+            <Label Name="_FilterCountLabel" Width="110" Margin="5">
+                &lt;kein Filter&gt;
+            </Label>            
+            <Label Width="35" Margin="5">
+                Jahr:
+            </Label>
+            <ComboBox Name="_YearSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="2">
+                <ComboBoxItem>2013</ComboBoxItem>
+                <ComboBoxItem>2014</ComboBoxItem>
+                <ComboBoxItem>2015</ComboBoxItem>
+            </ComboBox>
+            <Label Width="70" Margin="5">
+                Raumbezug:
+            </Label>
+            <ComboBox Name="_AreaSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="0">
+                <ComboBoxItem>D</ComboBoxItem>
+                <ComboBoxItem>ABL</ComboBoxItem>
+                <ComboBoxItem>NBL</ComboBoxItem>
+            </ComboBox>
+            <Label Width="100" Margin="5">
+                Geschrieben nach:
+            </Label>
+            <wfi:WindowsFormsHost Margin="5" Width="100">
+                <swf:DateTimePicker xaml:Name="_NeedsChangeTimePicker" Format="Custom" CustomFormat="dd.MM.yyyy"/>
+            </wfi:WindowsFormsHost>
+            <Label Width="77" Margin="5">
+                Abweichung:
+            </Label>
+            <ComboBox Name="_ChangeAllowedSelect" IsEditable="False" Width="77" Height="20" SelectedIndex="1">
+                <ComboBoxItem>Klein (0,2)</ComboBoxItem>
+                <ComboBoxItem>Mittel (0,5)</ComboBoxItem>
+                <ComboBoxItem>Gross (1)</ComboBoxItem>
+            </ComboBox>
+            <Label Width="10" Margin="5">
+                -
+            </Label>
+            <CheckBox Name="_TestConsistentCheck" IsChecked="False" VerticalAlignment="Center" Margin="5">
+                Konsistente prüfen
+            </CheckBox>
+        </StackPanel>
+        <Label Name="_CurrentEmissionLabel" DockPanel.Dock="Bottom" Visibility="Collapsed" />
+        <ListView Name="_EmissionsListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="In Datasheet zeigen" Click="Show">
+                        <MenuItem.Icon>
+                            <Image Source="Images/edit.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Path=Name}" />
+                    <GridViewColumn Header="ID" Width="150" DisplayMemberBinding="{Binding Path=ID}" />
+                    <GridViewColumn Header="Legende" Width="350" DisplayMemberBinding="{Binding Path=Legend}" />
+                    <GridViewColumn Header="Probleme" Width="500" DisplayMemberBinding="{Binding Path=Problems}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

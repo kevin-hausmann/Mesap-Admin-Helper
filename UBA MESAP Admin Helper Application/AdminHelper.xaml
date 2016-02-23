@@ -1,0 +1,11 @@
+﻿<Application xaml:Class="UBA.Mesap.AdminHelper.AdminHelper"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
+    StartupUri="MainWindow.xaml">
+    
+    <Application.Resources>
+        <DataTemplate xaml:Key="Header">
+                <TextBlock Text="{Binding}" VerticalAlignment="Center" Margin="3" FontWeight="Bold" />
+        </DataTemplate>
+    </Application.Resources>
+</Application>

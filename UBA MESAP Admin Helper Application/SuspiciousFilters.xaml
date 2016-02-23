@@ -1,0 +1,96 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.SuspiciousFilters"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Count}" Value="0">
+                    <Setter Property="Background" Value="#ff4723" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=IsHighCount}" Value="true">
+                    <Setter Property="Background" Value="#ffb931" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+   <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Button Name="_SearchSuspicousFiltersButton" HorizontalAlignment="Left" Click="SearchSuspicousFilters" Margin="5">
+                Suche fragliche Filter!
+            </Button>
+            <Label Margin="5">Suche auf Ordner begrenzen:</Label>
+            <TextBox Name="_SearchFolderTextBox" Width="250" Margin="5" VerticalContentAlignment="Center" IsEnabled="True">
+                &lt;alle&gt;
+            </TextBox>
+            <Button Name="_SelectSearchFolderButton" Margin="5" Click="SelectSearchFolder">
+                Auswählen...
+            </Button>
+            <Label Width="122" Margin="25,5,5,5">
+                Als hoch markieren ab
+            </Label>
+            <ComboBox Name="_HighCountSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="1">
+                <ComboBoxItem>100</ComboBoxItem>
+                <ComboBoxItem>500</ComboBoxItem>
+                <ComboBoxItem>1000</ComboBoxItem>
+                <ComboBoxItem>1500</ComboBoxItem>
+            </ComboBox>
+            <Label Width="70" Margin="5">
+                Zeitreihen
+            </Label>
+        </StackPanel>
+        <Label DockPanel.Dock="Bottom" Name="_CurrentFilterLabel" Visibility="Collapsed" />
+        <ListView Name="_SuspicousFiltersListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                        <MenuItem.Icon>
+                            <Image Source="Images/edit.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Filter..." Click="ShowFilterDialog">
+                        <MenuItem.Icon>
+                            <Image Source="Images/filter.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Sicht löschen" Click="DeleteFilter">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Sichteinstellungen">
+                        <MenuItem.Icon>
+                            <Image Source="Images/datasheet.gif" />
+                        </MenuItem.Icon>
+                        <MenuItem Header="Für diese Sicht zurücksetzen" Click="ApplyStandardSettings" />
+                        <MenuItem Header="Für alle Sichten zurücksetzen" Click="ApplyStandardSettingsAll" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Alles kopieren" Click="CopyAll">
+                        <MenuItem.Icon>
+                            <Image Source="Images/copy.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Pfad" DisplayMemberBinding="{Binding Path=Path}" Width="300" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" Width="250" />
+                    <GridViewColumn Header="Id" DisplayMemberBinding="{Binding Path=Id}" Width="150" />
+                    <GridViewColumn Header="Anzahl Zeitreihen">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Count}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Modus" DisplayMemberBinding="{Binding Path=Mode}" Width="100" />
+                    <GridViewColumn Header="Erstellt" DisplayMemberBinding="{Binding Path=CreateDate}" />
+                    <GridViewColumn Header="Geändert" DisplayMemberBinding="{Binding Path=ChangeDate}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

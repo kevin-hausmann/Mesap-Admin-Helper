@@ -1,0 +1,109 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.SuspiciousTimeSeries"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=RealValues}" Value="0">
+                    <Setter Property="Background" Value="#ff4723" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Button Name="_SetFilterButton" Margin="5" Click="SetFilter">Filter definieren...</Button>
+            <Label Name="_FilterCountLabel" Width="250" Margin="5">
+                &lt;kein Filter&gt;
+            </Label>
+            <Button Name="_StartSearchButton" Margin="5" Click="SearchSuspiciousTimeSeries">
+                Zeitreihen untersuchen!
+            </Button>
+            <CheckBox Name="_SortCheck" IsChecked="True" VerticalAlignment="Center" Margin="5">
+                Sortieren
+            </CheckBox>
+        </StackPanel>
+        <Label DockPanel.Dock="Bottom" Name="_CurrentTimeSeriesLabel" Visibility="Collapsed" />
+        <ListView Name="_TimeSeriesListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                        <MenuItem.Icon>
+                            <Image Source="Images/edit.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Werte anzeigen" Click="ShowValues">
+                        <MenuItem.Icon>
+                            <Image Source="Images/datasheet.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Alle Historien konsolidieren" Click="ConsolidateAllHistories" />
+                    <Separator />
+                    <MenuItem Header="Alles kopieren" Click="CopyAll">
+                        <MenuItem.Icon>
+                            <Image Source="Images/copy.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Path=Name}" />
+                    <GridViewColumn Header="ID" Width="150" DisplayMemberBinding="{Binding Path=ID}" />
+                    <GridViewColumn Header="Legende" Width="350" DisplayMemberBinding="{Binding Path=Legend}" />
+                    <GridViewColumn Header="Werte">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=RealValues}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Nullen">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=ZeroValues}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Keys">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=KeyValues}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="DELs">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=DeletedValues}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="?Doku">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=HasDocumentation}" TextAlignment="Center" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="?Hist">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=ObsoleteHistoryEntries}" TextAlignment="Center" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="?Unsi">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=HasInvalidUncertainties}" TextAlignment="Center" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,84 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.Hitlist"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Count}" Value="0">
+                    <Setter Property="Background" Value="Orange" />
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Count}" Value="0" />
+                        <Condition Binding="{Binding TreeUse}" Value="0" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background" Value="Red" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel>
+        <Button DockPanel.Dock="Top" Name="_GenerateHitlistButton" HorizontalAlignment="Left" Click="GenerateHitlist" Margin="5">
+            Hitliste generieren!
+        </Button>
+        <Label DockPanel.Dock="Bottom" Name="_HitlistStatusLabel" Visibility="Collapsed" />
+        <ListView Name="_HitlistListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                        <MenuItem.Icon>
+                            <Image Source="Images/edit.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Deskriptor löschen" Click="DeleteDescriptor">
+                        <MenuItem.Icon>
+                            <Image Source="Images/delete.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Zeitreihen anzeigen..." Click="ShowTimeSeriesDialog">
+                        <MenuItem.Icon>
+                            <Image Source="Images/datasheet.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Sortieren">
+                        <MenuItem.Icon>
+                            <Image Source="Images/sort.gif" />
+                        </MenuItem.Icon>
+                        <MenuItem Header="Verwendungen Zeitreihen/Name (Standard)" Click="SortByCountName" />
+                        <MenuItem Header="Dimension/Verwendungen Zeitreihen/Name" Click="SortByDimensionCountName" />
+                        <MenuItem Header="Dimension/Name" Click="SortByDimensionName" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Alles kopieren" Click="CopyAll">
+                        <MenuItem.Icon>
+                            <Image Source="Images/copy.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Dimension" DisplayMemberBinding="{Binding Path=Dimension}" Width="200" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" Width="300"/>
+                    <GridViewColumn Header="Id" DisplayMemberBinding="{Binding Path=Id}" Width="200"/>
+                    <GridViewColumn Header="Verwendung in Zeitreihen">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Count}" TextAlignment="Right" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Verwendung in Bäumen">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=TreeUse}" TextAlignment="Right" />
+                             </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,36 @@
+﻿<Window xaml:Class="UBA.Mesap.AdminHelper.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tab="clr-namespace:UBA.Mesap.AdminHelper"
+    Title="UBA Mesap Admin Helper" WindowState="Maximized" Icon="images/window.png">
+    <DockPanel LastChildFill="True">
+        <StatusBar DockPanel.Dock="Top" HorizontalAlignment="Stretch" BorderThickness="1" BorderBrush="Black">
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Name="_LoginTextBlock"></TextBlock>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <ComboBox Name="_DatabaseSelect" IsEditable="False" Width="250" Height="20"></ComboBox>
+            </StatusBarItem>
+        </StatusBar>
+        <TabControl Name="_MainTabControl">
+            <TabItem Header="Letzte Änderungen">
+                <tab:History />
+            </TabItem>
+            <TabItem Header="Hitliste der Deskriptoren">
+                <tab:Hitlist />
+            </TabItem>
+            <TabItem Header="Fragliche Filter">
+                <tab:SuspiciousFilters />
+            </TabItem>
+            <TabItem Header="Fragliche Zeitreihen">
+                <tab:SuspiciousTimeSeries />
+            </TabItem>
+            <TabItem Header="Fragliche Emissionen">
+                <tab:SuspiciousEmissions />
+            </TabItem>
+            <TabItem Header="Werte löschen">
+                <tab:DeleteValues />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
