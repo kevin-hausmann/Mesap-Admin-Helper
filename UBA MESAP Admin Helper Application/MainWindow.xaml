@@ -31,6 +31,9 @@
             <TabItem Header="Werte löschen">
                 <tab:DeleteValues />
             </TabItem>
+            <TabItem Header="Datenbankvergleich">
+                <tab:DatabaseComparison />
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

@@ -86,6 +86,16 @@ namespace UBA.Mesap.AdminHelper
             return databaseConnection;
         }
 
+        /// <summary>
+        /// Get a direct SQL (non-API) database connection.
+        /// </summary>
+        /// <param name="databaseId">Database you want to connect to. Can be different to the current default.</param>
+        /// <returns>New and closed SQL connection object, to be managed by the caller.</returns>
+        internal SqlConnection GetDirectDBConnection(String databaseId)
+        {
+            return new SqlConnection(BuildDBConnectionString(databaseId));
+        }
+
         private bool Connect(String databaseId, bool readOnly, bool exclusive)
         {
             // Open API connection
