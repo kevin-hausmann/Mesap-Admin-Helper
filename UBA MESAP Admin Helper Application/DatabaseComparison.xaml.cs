@@ -62,6 +62,7 @@ namespace UBA.Mesap.AdminHelper
                     entry.Views = GetRowCount(databaseConnection, "TimeSeriesView");
                     entry.Reports = GetRowCount(databaseConnection, "Report");
                     entry.Size = GetDatabaseSize(databaseConnection);
+                    entry.Zeros = (int)new SqlCommand("Select count(*) from TimeSeriesData where value=0", databaseConnection).ExecuteScalar();
 
                     databaseConnection.Close();
 
@@ -101,10 +102,12 @@ namespace UBA.Mesap.AdminHelper
             SqlCommand command = new SqlCommand("sp_spaceused", databaseConnection);
             command.CommandType = CommandType.StoredProcedure;
 
-            SqlDataReader rdr = command.ExecuteReader();
-            rdr.Read();
+            SqlDataReader reader = command.ExecuteReader();
+            reader.Read();
+            String result = reader["database_size"].ToString();
+            reader.Close();
 
-            return rdr["database_size"].ToString();
+            return result;
         }
 
         #region IDatabaseChangedObserver Members
@@ -129,6 +132,7 @@ namespace UBA.Mesap.AdminHelper
         public int Views { get; set; }
         public int Reports { get; set; }
         public String Size { get; set; }
+        public int Zeros { get; set; }
 
         #region IExportable Members
 
