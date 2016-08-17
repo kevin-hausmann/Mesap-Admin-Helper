@@ -39,12 +39,12 @@
         <ListView Name="_SuspicousFiltersListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/edit.gif" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Filter..." Click="ShowFilterDialog">
+                    <MenuItem Header="Filter..." Click="ShowFilterDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/filter.gif" />
                         </MenuItem.Icon>

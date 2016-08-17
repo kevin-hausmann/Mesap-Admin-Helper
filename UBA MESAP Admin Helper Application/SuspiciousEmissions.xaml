@@ -61,7 +61,7 @@
         <ListView Name="_EmissionsListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="In Datasheet zeigen" Click="Show">
+                    <MenuItem Header="In Datasheet zeigen" Click="Show" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/edit.gif" />
                         </MenuItem.Icon>
