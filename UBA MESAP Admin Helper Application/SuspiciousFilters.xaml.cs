@@ -41,7 +41,7 @@ namespace UBA.Mesap.AdminHelper
 
         private void FolderIdChanged(object sender, TextChangedEventArgs e)
         {
-            if (_SearchFolderTextBox.Text.Length == 0 || _SearchFolderTextBox.Text.Equals(FindResource("SuspiciousFiltersAllFolders").ToString()))
+            if (_SearchFolderTextBox.Text.Length == 0 || _SearchFolderTextBox.Text.Equals(Properties.Resources.SuspiciousFiltersAllFolders))
             {
                 _SearchFolderTextBox.Background = Brushes.White;
                 _searchFolderNumber = -1;

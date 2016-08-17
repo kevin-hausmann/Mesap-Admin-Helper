@@ -1,9 +1,8 @@
 ﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.SuspiciousFilters"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    xmlns:p="clr-namespace:UBA.Mesap.AdminHelper.Properties">
     <UserControl.Resources>
-        <sys:String xaml:Key="SuspiciousFiltersAllFolders">&lt;alle&gt;</sys:String>
         <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Style.Triggers>
@@ -22,7 +21,7 @@
                 Suche fragliche Filter!
             </Button>
             <Label Margin="5">Suche auf Ordner mit folgender ID begrenzen:</Label>
-            <TextBox Name="_SearchFolderTextBox" Width="250" Margin="5" Text="{StaticResource SuspiciousFiltersAllFolders}" VerticalContentAlignment="Center" IsEnabled="True" TextChanged="FolderIdChanged"/>
+            <TextBox Name="_SearchFolderTextBox" Width="250" Margin="5" Text="{xaml:Static p:Resources.SuspiciousFiltersAllFolders}" VerticalContentAlignment="Center" IsEnabled="True" TextChanged="FolderIdChanged"/>
             <Label Margin="25,5,5,5">
                 Als hoch markieren ab
             </Label>
