@@ -19,8 +19,8 @@
             <Button Name="_StartSearchButton" Margin="5" Click="SearchSuspiciousTimeSeries">
                 Zeitreihen untersuchen!
             </Button>
-            <CheckBox Name="_SortCheck" IsChecked="True" VerticalAlignment="Center" Margin="5">
-                Sortieren
+            <CheckBox Name="_SortCheck" VerticalAlignment="Center" Margin="5" IsChecked="False">
+                Abschließend nach Legende sortieren?
             </CheckBox>
         </StackPanel>
         <Label DockPanel.Dock="Bottom" Name="_CurrentTimeSeriesLabel" Visibility="Collapsed" />
