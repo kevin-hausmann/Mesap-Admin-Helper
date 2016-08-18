@@ -17,7 +17,7 @@ namespace UBA.Mesap.AdminHelper
     {
         private dboTSFilter filter;
         private int from = 1900; 
-        private int to = 2100; 
+        private int to = 2100;
 
         // UI root handle
         private uioRoot _uiRoot;
@@ -39,17 +39,16 @@ namespace UBA.Mesap.AdminHelper
             _TimeSeriesListView.AddHandler(Control.MouseDoubleClickEvent, new RoutedEventHandler(ShowValues));
         }
 
-        private void SetFilter(object sender, RoutedEventArgs e)
-        {
-            if (_uiRoot.ShowDlgTsFilterEdit(ref filter))
-            {
-                int count = MesapAPIHelper.GetTimeSeriesCount(filter);
-                _FilterCountLabel.Content = count + " Zeitreihe(n) ausgewählt";
-            }
-        }
-
         private void SearchSuspiciousTimeSeries(object sender, RoutedEventArgs e)
         {
+            // Use filter from admin tool view in database, if any
+            dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews("AdminTool");
+            if (views.Count == 1)
+            {
+                dboTSView view = MesapAPIHelper.GetFirstView(views);
+                filter = view.TsFilterGet();
+            }
+            
             int count = MesapAPIHelper.GetTimeSeriesCount(filter);
 
             // Check back if long term operation
@@ -59,7 +58,6 @@ namespace UBA.Mesap.AdminHelper
             {
                 // Prepare UI
                 (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
-                _SetFilterButton.IsEnabled = false;
                 _StartSearchButton.IsEnabled = false;
                 _CurrentTimeSeriesLabel.Visibility = Visibility.Visible;
                 _TimeSeriesListView.Items.Clear();
@@ -117,7 +115,6 @@ namespace UBA.Mesap.AdminHelper
             if ((bool) _SortCheck.IsChecked) _TimeSeriesListView.Items.Refresh();
 
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(true);
-            _SetFilterButton.IsEnabled = true;
             _StartSearchButton.IsEnabled = true;
 
             _CurrentTimeSeriesLabel.Content = message;
@@ -282,6 +279,7 @@ namespace UBA.Mesap.AdminHelper
             get
             {
                 if (!HasUncertaintyDocumentation()) return "Keine";
+                else if (!HasCompleteUncertaintyDocumentation()) return "Unvollständig";
                 else if (UncertaintyLowerLimit.Equals(0) || UncertaintyUpperLimit.Equals(0)) return "Umax | Umin = 0";
                 else if (UncertaintyLowerLimit >= 100) return "Umin >= 100";
                 else if (UncertaintyDistribution.Equals(Distribution.normal) &&

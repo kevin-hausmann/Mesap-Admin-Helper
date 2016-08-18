@@ -13,9 +13,8 @@
     </UserControl.Resources>
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-            <Button Name="_SetFilterButton" Margin="5" Click="SetFilter">Filter definieren...</Button>
-            <Label Name="_FilterCountLabel" Width="250" Margin="5">
-                &lt;kein Filter&gt;
+            <Label Name="_FilterCountLabel" Margin="5">
+                Verwenden Sie eine Sicht mit der ID "AdminTool" um den Filter zu setzen.
             </Label>
             <Button Name="_StartSearchButton" Margin="5" Click="SearchSuspiciousTimeSeries">
                 Zeitreihen untersuchen!
