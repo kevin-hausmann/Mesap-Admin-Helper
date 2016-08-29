@@ -155,10 +155,18 @@ namespace UBA.Mesap.AdminHelper
 
             if (series != null)
             {
+                // Find "DeleteValues" tab, switch to it and show time series' contents
                 TabControl mainTabControl = (TabControl)((TabItem)this.Parent).Parent;
-                mainTabControl.SelectedIndex = mainTabControl.Items.IndexOf(this.Parent) + 1;
-                DeleteValues deleteValuesTab = ((TabItem)mainTabControl.SelectedItem).Content as DeleteValues;
-                deleteValuesTab.ShowValues(series.ID);
+                foreach (TabItem item in mainTabControl.Items)
+                {
+                    DeleteValues deleteValuesTab = item.Content as DeleteValues;
+                    if (deleteValuesTab != null)
+                    {
+                        item.IsSelected = true;
+                        deleteValuesTab.ShowValues(series.ID);
+                        break;
+                    }
+                }
             }
             else MessageBox.Show("Keine Zeitreihe gewählt", "Werte anzeigen", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
