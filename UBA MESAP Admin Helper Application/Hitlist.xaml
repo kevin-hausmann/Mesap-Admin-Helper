@@ -26,7 +26,7 @@
         <ListView Name="_HitlistListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/edit.gif" />
                         </MenuItem.Icon>
@@ -36,7 +36,7 @@
                             <Image Source="Images/delete.gif" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Zeitreihen anzeigen..." Click="ShowTimeSeriesDialog">
+                    <MenuItem Header="Zeitreihen anzeigen..." Click="ShowTimeSeriesDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/datasheet.gif" />
                         </MenuItem.Icon>

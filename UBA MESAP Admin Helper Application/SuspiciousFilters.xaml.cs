@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using System.Windows.Input;
 using M4DBO;
@@ -38,11 +39,20 @@ namespace UBA.Mesap.AdminHelper
             _SuspicousFiltersListView.AddHandler(Control.MouseDoubleClickEvent, new RoutedEventHandler(ShowPropertiesDialog));
         }
 
-        private void SelectSearchFolder(object sender, RoutedEventArgs e)
+        private void FolderIdChanged(object sender, TextChangedEventArgs e)
         {
-            // Search folder field is set by giving reference!
-            if (_uiRoot.ShowDlgFolderSelector(((AdminHelper)Application.Current).database.DbNr, M4UIO.mspUioFolderObjEnum.mspUioFolderTSView, 0, ref _searchFolderNumber))
-                _SearchFolderTextBox.Text = MesapAPIHelper.GetView(Convert.ToString(_searchFolderNumber)).Name;
+            if (_SearchFolderTextBox.Text.Length == 0 || _SearchFolderTextBox.Text.Equals(Properties.Resources.SuspiciousFiltersAllFolders))
+            {
+                _SearchFolderTextBox.Background = Brushes.White;
+                _searchFolderNumber = -1;
+            }
+            else
+            {
+                dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews(_SearchFolderTextBox.Text);
+
+                _SearchFolderTextBox.Background = views.Count == 1 ? Brushes.White : Brushes.LightPink;
+                _searchFolderNumber = views.Count == 1 ? views.GetNrFromId(_SearchFolderTextBox.Text) : -1;
+            }
         }
 
         private void SearchSuspicousFilters(object sender, RoutedEventArgs e)
@@ -57,7 +67,6 @@ namespace UBA.Mesap.AdminHelper
                 // Prepare UI
                 (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
                 _SearchSuspicousFiltersButton.IsEnabled = false;
-                _SelectSearchFolderButton.IsEnabled = false;
                 _HighCountSelect.IsEnabled = false;
                 _CurrentFilterLabel.Visibility = Visibility.Visible;
                 _SuspicousFiltersListView.Items.Clear();
@@ -128,7 +137,6 @@ namespace UBA.Mesap.AdminHelper
 
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(true);
             _SearchSuspicousFiltersButton.IsEnabled = true;
-            _SelectSearchFolderButton.IsEnabled = true;
             _HighCountSelect.IsEnabled = true;
             _CurrentFilterLabel.Content = message;
         }

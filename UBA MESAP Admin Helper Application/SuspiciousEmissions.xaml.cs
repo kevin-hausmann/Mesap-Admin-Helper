@@ -36,17 +36,16 @@ namespace UBA.Mesap.AdminHelper
             //_EmissionsListView.Items.SortDescriptions.Add(new SortDescription("Legend", ListSortDirection.Ascending));
         }
 
-        private void SetFilter(object sender, RoutedEventArgs e)
-        {
-            if (_uiRoot.ShowDlgTsFilterEdit(ref filter))
-            {
-                int count = MesapAPIHelper.GetTimeSeriesCount(filter);
-                _FilterCountLabel.Content = count + " Zeitreihe(n)";
-            }
-        }
-
         private void SearchSuspiciousEmissions(object sender, RoutedEventArgs e)
         {
+            // Use filter from admin tool view in database, if any
+            dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews("AdminTool");
+            if (views.Count == 1)
+            {
+                dboTSView view = MesapAPIHelper.GetFirstView(views);
+                filter = view.TsFilterGet();
+            }
+
             int count = MesapAPIHelper.GetTimeSeriesCount(filter);
 
             // Check back if long term operation
@@ -56,7 +55,6 @@ namespace UBA.Mesap.AdminHelper
             {
                 // Prepare UI
                 (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
-                _SetFilterButton.IsEnabled = false;
                 _StartSearchButton.IsEnabled = false;
                 _ChangeAllowedSelect.IsEnabled = false;
                 _YearSelect.IsEnabled = false;
@@ -156,7 +154,6 @@ namespace UBA.Mesap.AdminHelper
             _EmissionsListView.Items.Refresh();
 
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(true);
-            _SetFilterButton.IsEnabled = true;
             _StartSearchButton.IsEnabled = true;
             _ChangeAllowedSelect.IsEnabled = true;
             _YearSelect.IsEnabled = true;

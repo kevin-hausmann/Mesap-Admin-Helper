@@ -59,5 +59,14 @@ namespace UBA.Mesap.AdminHelper.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;all&gt;.
+        /// </summary>
+        public static string SuspiciousFiltersAllFolders {
+            get {
+                return ResourceManager.GetString("SuspiciousFiltersAllFolders", resourceCulture);
+            }
+        }
     }
 }

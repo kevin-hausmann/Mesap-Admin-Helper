@@ -137,6 +137,19 @@ namespace UBA.Mesap.AdminHelper.Types
         }
 
         /// <summary>
+        /// Check if the time series has all three uncertainty documentation components (min, max, distribution).
+        /// </summary>
+        /// <returns>If a full documentation component for uncertainties can be found</returns>
+        public bool HasCompleteUncertaintyDocumentation()
+        {
+            double dummy;
+
+            return ExtractUncertaintyInformation(UncertaintyComponent.distribution).ReferenceData > 0 &&
+                Double.TryParse(ExtractUncertaintyInformation(UncertaintyComponent.umax).NumberData.ToString(), out dummy) &&
+                Double.TryParse(ExtractUncertaintyInformation(UncertaintyComponent.umin).NumberData.ToString(), out dummy); 
+        }
+
+        /// <summary>
         /// Check whether this time series is set as "okay" in its properties
         /// </summary>
         /// <returns>The current flag status</returns>

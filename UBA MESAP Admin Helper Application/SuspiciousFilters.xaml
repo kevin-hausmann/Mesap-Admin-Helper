@@ -1,6 +1,7 @@
 ﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.SuspiciousFilters"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:p="clr-namespace:UBA.Mesap.AdminHelper.Properties">
     <UserControl.Resources>
         <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -19,14 +20,9 @@
             <Button Name="_SearchSuspicousFiltersButton" HorizontalAlignment="Left" Click="SearchSuspicousFilters" Margin="5">
                 Suche fragliche Filter!
             </Button>
-            <Label Margin="5">Suche auf Ordner begrenzen:</Label>
-            <TextBox Name="_SearchFolderTextBox" Width="250" Margin="5" VerticalContentAlignment="Center" IsEnabled="True">
-                &lt;alle&gt;
-            </TextBox>
-            <Button Name="_SelectSearchFolderButton" Margin="5" Click="SelectSearchFolder">
-                Auswählen...
-            </Button>
-            <Label Width="122" Margin="25,5,5,5">
+            <Label Margin="5">Suche auf Ordner mit folgender ID begrenzen:</Label>
+            <TextBox Name="_SearchFolderTextBox" Width="250" Margin="5" Text="{xaml:Static p:Resources.SuspiciousFiltersAllFolders}" VerticalContentAlignment="Center" IsEnabled="True" TextChanged="FolderIdChanged"/>
+            <Label Margin="25,5,5,5">
                 Als hoch markieren ab
             </Label>
             <ComboBox Name="_HighCountSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="1">
@@ -43,12 +39,12 @@
         <ListView Name="_SuspicousFiltersListView" ScrollViewer.CanContentScroll="False" SelectionMode="Single" ItemContainerStyle="{StaticResource ItemContStyle}">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog">
+                    <MenuItem Header="Eigenschaften..." Click="ShowPropertiesDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/edit.gif" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Filter..." Click="ShowFilterDialog">
+                    <MenuItem Header="Filter..." Click="ShowFilterDialog" IsEnabled="False">
                         <MenuItem.Icon>
                             <Image Source="Images/filter.gif" />
                         </MenuItem.Icon>
