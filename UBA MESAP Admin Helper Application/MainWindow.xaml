@@ -9,7 +9,7 @@
                 <TextBlock Name="_LoginTextBlock"></TextBlock>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
-                <ComboBox Name="_DatabaseSelect" IsEditable="False" Width="250" Height="20"></ComboBox>
+                <ComboBox xaml:Name="_DatabaseSelect" IsEditable="False" Width="250" />
             </StatusBarItem>
         </StatusBar>
         <TabControl Name="_MainTabControl">
