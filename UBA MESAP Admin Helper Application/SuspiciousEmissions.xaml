@@ -10,50 +10,46 @@
     </UserControl.Resources>
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Label Name="_FilterCountLabel" Margin="5">
+                Verwenden Sie eine Sicht mit der ID "AdminTool" um den Filter zu setzen.
+            </Label>
             <Button Name="_StartSearchButton" Margin="5" Click="SearchSuspiciousEmissions">
                 Emissionszeitreihen untersuchen!
             </Button>
-            <Label Width="80" Margin="20,5,5,5">
-                Einstellungen:
-            </Label>
-            <Button Name="_SetFilterButton" Margin="5" Click="SetFilter">Filter definieren...</Button>
-            <Label Name="_FilterCountLabel" Width="110" Margin="5">
-                &lt;kein Filter&gt;
-            </Label>            
-            <Label Width="35" Margin="5">
+            <Label Margin="5">
                 Jahr:
             </Label>
-            <ComboBox Name="_YearSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="2">
+            <ComboBox Name="_YearSelect" IsEditable="False" VerticalAlignment="Center" SelectedIndex="2">
                 <ComboBoxItem>2013</ComboBoxItem>
                 <ComboBoxItem>2014</ComboBoxItem>
                 <ComboBoxItem>2015</ComboBoxItem>
             </ComboBox>
-            <Label Width="70" Margin="5">
+            <Label Margin="5">
                 Raumbezug:
             </Label>
-            <ComboBox Name="_AreaSelect" IsEditable="False" Width="50" Height="20" SelectedIndex="0">
+            <ComboBox Name="_AreaSelect" IsEditable="False" VerticalAlignment="Center" SelectedIndex="0">
                 <ComboBoxItem>D</ComboBoxItem>
                 <ComboBoxItem>ABL</ComboBoxItem>
                 <ComboBoxItem>NBL</ComboBoxItem>
             </ComboBox>
-            <Label Width="100" Margin="5">
+            <Label Margin="5">
                 Geschrieben nach:
             </Label>
-            <wfi:WindowsFormsHost Margin="5" Width="100">
+            <wfi:WindowsFormsHost Margin="5">
                 <swf:DateTimePicker xaml:Name="_NeedsChangeTimePicker" Format="Custom" CustomFormat="dd.MM.yyyy"/>
             </wfi:WindowsFormsHost>
-            <Label Width="77" Margin="5">
+            <Label Margin="5">
                 Abweichung:
             </Label>
-            <ComboBox Name="_ChangeAllowedSelect" IsEditable="False" Width="77" Height="20" SelectedIndex="1">
+            <ComboBox Name="_ChangeAllowedSelect" IsEditable="False" VerticalAlignment="Center" SelectedIndex="1">
                 <ComboBoxItem>Klein (0,2)</ComboBoxItem>
                 <ComboBoxItem>Mittel (0,5)</ComboBoxItem>
                 <ComboBoxItem>Gross (1)</ComboBoxItem>
             </ComboBox>
-            <Label Width="10" Margin="5">
+            <Label Margin="5">
                 -
             </Label>
-            <CheckBox Name="_TestConsistentCheck" IsChecked="False" VerticalAlignment="Center" Margin="5">
+            <CheckBox Name="_TestConsistentCheck" IsChecked="False" VerticalAlignment="Center">
                 Konsistente prüfen
             </CheckBox>
         </StackPanel>
