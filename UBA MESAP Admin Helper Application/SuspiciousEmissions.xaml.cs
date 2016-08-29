@@ -50,7 +50,7 @@ namespace UBA.Mesap.AdminHelper
             int count = MesapAPIHelper.GetTimeSeriesCount(filter);
 
             // Check back if long term operation
-            if (count < 10000 || (count >= 10000 &&
+            if (count < 2000 || (count >= 2000 &&
                 MessageBox.Show("Ohne (weitere) Einschränkung der Suche dauert diese Operation sehr lange - trotzdem starten?",
                 "Suche starten", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes))
             {
