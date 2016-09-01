@@ -168,15 +168,30 @@ namespace UBA.Mesap.AdminHelper
             else MessageBox.Show("Keine Zeitreihe gewählt", "Werte anzeigen", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
+        private void ConsolidateHistory(object sender, RoutedEventArgs e)
+        {
+            int count = 0;
+
+            SuspectedTimeSeries series = _TimeSeriesListView.SelectedItem as SuspectedTimeSeries;
+            foreach (dboTSData data in series.Object.TSDatas)
+                count += new DataValue(data).ConsolidateHistory();
+            
+            MessageBox.Show(count + " Werte aus der Historie gelöscht", "Historie konsolidieren", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
         private void ConsolidateAllHistories(object sender, RoutedEventArgs e)
         {
             int count = 0;
 
-            foreach (Object item in _TimeSeriesListView.Items)
+            if (MessageBox.Show("Konsolidierung für alle gelisteten Zeitreihen durchführen?",
+                "Historie aufräumen", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                SuspectedTimeSeries series = item as SuspectedTimeSeries;
-                foreach (dboTSData data in series.Object.TSDatas)
-                    count += new DataValue(data).ConsolidateHistory();
+                foreach (Object item in _TimeSeriesListView.Items)
+                {
+                    SuspectedTimeSeries series = item as SuspectedTimeSeries;
+                    foreach (dboTSData data in series.Object.TSDatas)
+                        count += new DataValue(data).ConsolidateHistory();
+                }
             }
 
             MessageBox.Show(count + " Werte aus der Historie gelöscht", "Historie konsolidieren", MessageBoxButton.OK, MessageBoxImage.Information);

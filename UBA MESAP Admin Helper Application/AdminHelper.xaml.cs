@@ -130,6 +130,7 @@ namespace UBA.Mesap.AdminHelper
                 case "Enerdat":
                     databaseName = databaseId.ToUpper(); break; 
                 case "ZSE_aktuell":
+                case "ZSE_Schulung":
                     databaseName = databaseId; break;
                 case "ZSE_Submission_2016_20160203": 
                 case "ZSE_Submission_2015_20150428":

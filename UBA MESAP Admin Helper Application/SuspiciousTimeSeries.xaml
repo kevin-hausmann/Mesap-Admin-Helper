@@ -38,6 +38,7 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
+                    <MenuItem Header="Historie konsolidieren" Click="ConsolidateHistory" />
                     <MenuItem Header="Alle Historien konsolidieren" Click="ConsolidateAllHistories" />
                     <Separator />
                     <MenuItem Header="Alles kopieren" Click="CopyAll">

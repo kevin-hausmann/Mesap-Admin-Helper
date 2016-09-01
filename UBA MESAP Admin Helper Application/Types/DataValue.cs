@@ -108,8 +108,11 @@ namespace UBA.Mesap.AdminHelper.Types
                 SqlConnection connection = ((AdminHelper)Application.Current).GetDirectDBConnection();
 
                 foreach (ValueHistoryEntry entry in obsoleteEntries)
-                    new SqlCommand("DELETE FROM TimeSeriesDataHistory WHERE CntNr=" + entry.Object.CntNr,
-                        connection).ExecuteNonQuery();
+                {
+                    String deleteQuery = "DELETE FROM TimeSeriesDataHistory WHERE ValueCntNr=" + entry.Object.ValueCntNr +
+                        " and ChangeDate=\'" + entry.Object.ChangeDate.ToString("yyyyMMdd HH:mm:ss.fff") + "\'";
+                    new SqlCommand(deleteQuery, connection).ExecuteNonQuery();
+                }
             }
 
             return obsoleteEntries.Count;
