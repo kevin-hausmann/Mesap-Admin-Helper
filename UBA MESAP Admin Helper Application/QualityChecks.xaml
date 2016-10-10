@@ -1,0 +1,36 @@
+﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.QualityChecks"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <ItemsControl Name="_QualityCheckList" DockPanel.Dock="Right">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox IsChecked="False" Click="SelectCheck" Tag="{Binding Id}">
+                        <TextBlock Text="{Binding Name}" />
+                    </CheckBox>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <Label Name="_FilterCountLabel" Margin="5">
+                Verwenden Sie eine Sicht mit der ID "QualityCheck" um den Filter zu setzen.
+            </Label>
+            <Button Name="_RunQualityChecks" Margin="5" Click="RunQualityChecks" IsEnabled="False">
+                Prüfungen durchführen!
+            </Button>
+        </StackPanel>
+        <Label DockPanel.Dock="Bottom" Name="_StatusLabel" Visibility="Collapsed" />
+        <ListView Name="_ResultListView">
+            <ListView.View>
+                <GridView ColumnHeaderTemplate="{StaticResource Header}">
+                    <GridViewColumn Header="Check" />
+                    <GridViewColumn Header="Title" />
+                    <GridViewColumn Header="Description" />
+                    <GridViewColumn Header="Category" />
+                    <GridViewColumn Header="Priority" />
+                    <GridViewColumn Header="ContactPerson" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

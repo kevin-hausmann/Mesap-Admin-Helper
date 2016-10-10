@@ -28,6 +28,9 @@
             <TabItem Header="Fragliche Emissionen">
                 <tab:SuspiciousEmissions />
             </TabItem>
+            <TabItem Header="Qualitätsprüfungen">
+                <tab:QualityChecks />
+            </TabItem>
             <TabItem Header="Werte löschen">
                 <tab:DeleteValues />
             </TabItem>
