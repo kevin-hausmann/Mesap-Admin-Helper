@@ -1,8 +1,11 @@
 ﻿using M4DBO;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -20,13 +23,15 @@ namespace UBA.Mesap.AdminHelper
         private ISet<QualityCheck> AvailableChecks = FindQualityChecks();
         private ISet<QualityCheck> EnabledChecks = new SortedSet<QualityCheck>();
 
+        private CancellationTokenSource cts;
+
         public QualityChecks()
         {
             InitializeComponent();
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).Register(this);
 
             // Bind the list of quality checks to the UI
-            _QualityCheckList.ItemsSource = AvailableChecks;
+            _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(AvailableChecks);
 
             // Filter used to limit the time series' check run on
             filter = ((AdminHelper)Application.Current).database.CreateObject_TSFilter();
@@ -43,7 +48,7 @@ namespace UBA.Mesap.AdminHelper
             _RunQualityChecks.IsEnabled = EnabledChecks.Count > 0;
         }
 
-        private void RunQualityChecks(object sender, RoutedEventArgs e)
+        private async void RunQualityChecks(object sender, RoutedEventArgs e)
         {
             // Use filter from quality check view in database, if any
             dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews("QualityCheck");
@@ -53,57 +58,49 @@ namespace UBA.Mesap.AdminHelper
                 filter = view.TsFilterGet();
             }
 
-            int count = MesapAPIHelper.GetTimeSeriesCount(filter);
+            // Prepare UI
+            (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
+            _RunQualityChecks.IsEnabled = false;
+            _CancelQualityChecks.IsEnabled = true;
+            _ResultListView.Items.Clear();
 
-            // Check back if long term operation
-            if (count < 1000 || (count >= 1000 &&
-                MessageBox.Show("Ohne Einschränkung dauert die Prüfung sehr lange - trotzdem durchführen?",
-                "Starten", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes))
+            // Find quality check to run
+            cts = new CancellationTokenSource();
+            Task[] checksRunning = (from check in EnabledChecks select
+                             check.RunAsync(filter, cts.Token, new Progress<ISet<Finding>>(results => { _ResultListView.Items.Add(results); }))).ToArray();
+
+            // Start execution and wait for all checks to finish
+            try
             {
-                // Prepare UI
-                (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
-                _RunQualityChecks.IsEnabled = false;
-                _StatusLabel.Visibility = Visibility.Visible;
-                _ResultListView.Items.Clear();
-
-                // Start job
-                Action runQualityChecks = new Action(RunQualityChecks);
-                runQualityChecks.BeginInvoke(null, null);
+                await Task.WhenAll(checksRunning);
             }
-        }
-
-        private void RunQualityChecks()
-        {
-            DateTime start = DateTime.Now;
-            dboList list = new dboList();
-            list.FromString(filter.GetTSNumbers(), VBA.VbVarType.vbLong);
-
-            int total = MesapAPIHelper.GetTimeSeriesCount(filter);
-            int count = 1;
-
-            foreach (object number in list)
-            {
-                dboTS timeSeries = MesapAPIHelper.GetTimeSeries(Convert.ToString(number));
-                if (timeSeries == null) continue;
+            catch (Exception ex)
+            { 
+                foreach (Task faulted in checksRunning.Where(t => t.IsFaulted)) { /* TODO */ }
             }
 
-            Action<String> showFinished = new Action<String>(ShowFinished);
-            Dispatcher.BeginInvoke(DispatcherPriority.Normal, showFinished, "Fertig - " + (count - 1) + " Zeitreihe(n) untersucht");
-        }
-
-        private void ShowProgress(String message)
-        {
-            _StatusLabel.Content = message;
-        }
-
-        private void ShowFinished(String message)
-        {
+            // Execution finished, update to UI
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(true);
             _RunQualityChecks.IsEnabled = true;
-
-            _StatusLabel.Content = message;
+            _CancelQualityChecks.IsEnabled = false;
+            // We cannot reuse the cancel token
+            cts.Dispose();
+            cts = null;
         }
 
+        private void CancelQualityChecks(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                cts.Cancel();
+            }
+            catch (Exception ex)
+            {
+                // TODO
+            }
+                
+        }
+        
         #region IDatabaseChangedObserver Members
 
         public void DatabaseChanged()

@@ -5,9 +5,19 @@
         <ItemsControl Name="_QualityCheckList" DockPanel.Dock="Right">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox IsChecked="False" Click="SelectCheck" Tag="{Binding Id}">
-                        <TextBlock Text="{Binding Name}" />
-                    </CheckBox>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25*" />
+                            <RowDefinition Height="10" />
+                        </Grid.RowDefinitions>
+                        <CheckBox IsChecked="False" Click="SelectCheck" Tag="{Binding Id}" Margin="5" ToolTip="{Binding Description}">
+                            <TextBlock Text="{Binding Name}" />
+                        </CheckBox>
+                        <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="2" />
+                    </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -18,13 +28,15 @@
             <Button Name="_RunQualityChecks" Margin="5" Click="RunQualityChecks" IsEnabled="False">
                 Prüfungen durchführen!
             </Button>
+            <Button Name="_CancelQualityChecks" Margin="5" Click="CancelQualityChecks" IsEnabled="False">
+                Alle abbrechen!
+            </Button>
         </StackPanel>
-        <Label DockPanel.Dock="Bottom" Name="_StatusLabel" Visibility="Collapsed" />
         <ListView Name="_ResultListView">
             <ListView.View>
                 <GridView ColumnHeaderTemplate="{StaticResource Header}">
-                    <GridViewColumn Header="Check" />
-                    <GridViewColumn Header="Title" />
+                    <GridViewColumn Header="Check" DisplayMemberBinding="{Binding Path=CheckId}" />
+                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path=Title}" />
                     <GridViewColumn Header="Description" />
                     <GridViewColumn Header="Category" />
                     <GridViewColumn Header="Priority" />
