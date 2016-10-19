@@ -10,7 +10,7 @@ namespace UBA.Mesap.AdminHelper.Types
     /// <summary>
     /// Base class for a single cell value, wraps dboTSData
     /// </summary>
-    class DataValue
+    public class DataValue
     {
         // The base API object wrapped
         protected dboTSData _data;
@@ -142,7 +142,7 @@ namespace UBA.Mesap.AdminHelper.Types
         //}
     }
 
-    class ValueHistoryEntry
+    public class ValueHistoryEntry
     {
         private dboTSDataHistory _entry;
 

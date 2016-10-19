@@ -3,7 +3,7 @@ using M4DBO;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
-    class Database
+    public class Database
     {
         private String _name;
         private String _id;

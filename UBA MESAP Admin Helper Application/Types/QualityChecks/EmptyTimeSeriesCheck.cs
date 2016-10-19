@@ -16,16 +16,23 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         public override string Description => "Identifiziert Zeitreihen, die keinerlei Werte enthalten";
 
-        public override Task RunAsync(dboTSFilter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
+        public override long EstimateExecutionTime(Filter filter)
+        {
+            return filter.Count * EstimateExecutionTime();
+        }
+
+        protected override int EstimateExecutionTime() { return 3; }
+
+        public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
             return Task.Run(() =>
             {
                 Completion = 0;
 
                 dboList list = new dboList();
-                list.FromString(filter.GetTSNumbers(), VBA.VbVarType.vbLong);
+                list.FromString(filter.Object.GetTSNumbers(), VBA.VbVarType.vbLong);
 
-                int total = MesapAPIHelper.GetTimeSeriesCount(filter);
+                int total = MesapAPIHelper.GetTimeSeriesCount(filter.Object);
                 int count = 1;
 
                 foreach (object number in list)

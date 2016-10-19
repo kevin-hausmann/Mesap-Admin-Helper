@@ -5,7 +5,7 @@ namespace UBA.Mesap.AdminHelper.Types
     /// <summary>
     /// Base class for a filter, wrapping dboTSFilter.
     /// </summary>
-    class Filter
+    public class Filter
     {
         // The base API object wrapped
         protected dboTSFilter _filter;
@@ -53,11 +53,13 @@ namespace UBA.Mesap.AdminHelper.Types
         {
             get
             {
-                if (_filter.FilterUsage.Equals(mspFilterUsageEnum.mspFilterUsageUnknown))
-                    return -1;
+                if (_countCache < 0 && _filter != null) {
+                    _countCache = 0;
 
-                if (_countCache < 0)
-                    _countCache = MesapAPIHelper.GetTimeSeriesCount(_filter);
+                    dboList list = new dboList();
+                    list.FromString(_filter.GetTSNumbers(), VBA.VbVarType.vbLong);
+                    foreach (object number in list) _countCache++;
+                }
 
                 return _countCache;
             }

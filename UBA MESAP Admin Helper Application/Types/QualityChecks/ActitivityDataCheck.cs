@@ -16,7 +16,14 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         public override string Description => "Something";
 
-        public override Task RunAsync(dboTSFilter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
+        public override long EstimateExecutionTime(Filter filter)
+        {
+            return filter.Count * EstimateExecutionTime();
+        }
+
+        protected override int EstimateExecutionTime() { return 42; }
+
+        public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
             return Task.Run(() =>
             {

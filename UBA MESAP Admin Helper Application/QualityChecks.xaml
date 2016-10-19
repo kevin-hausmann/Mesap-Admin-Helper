@@ -1,23 +1,19 @@
 ﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.QualityChecks"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter xaml:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
     <DockPanel>
         <ItemsControl Name="_QualityCheckList" DockPanel.Dock="Right">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="250" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="25*" />
-                            <RowDefinition Height="10" />
-                        </Grid.RowDefinitions>
-                        <CheckBox IsChecked="False" Click="SelectCheck" Tag="{Binding Id}" Margin="5" ToolTip="{Binding Description}">
+                    <StackPanel MaxWidth="250px">
+                        <CheckBox IsChecked="{Binding Enabled}" Click="SelectCheck" Tag="{Binding Id}" Margin="5" ToolTip="{Binding Description}">
                             <TextBlock Text="{Binding Name}" />
                         </CheckBox>
-                        <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="2" />
-                    </Grid>
+                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="5, 2" Height="5" Visibility="{Binding Enabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -31,6 +27,7 @@
             <Button Name="_CancelQualityChecks" Margin="5" Click="CancelQualityChecks" IsEnabled="False">
                 Alle abbrechen!
             </Button>
+            <Label Name="_ExecutionTimeLeft" Margin="5" Visibility="Collapsed" />
         </StackPanel>
         <ListView Name="_ResultListView">
             <ListView.View>

@@ -7,7 +7,7 @@ namespace UBA.Mesap.AdminHelper.Types
     /// <summary>
     /// Base class for time series, wrapping dboTS
     /// </summary>
-    class TimeSeries
+    public class TimeSeries
     {
         // The base API object wrapped
         protected dboTS _timeSeries;
