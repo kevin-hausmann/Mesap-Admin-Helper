@@ -234,6 +234,7 @@
     <Compile Include="Types\QualityCheck.cs" />
     <Compile Include="Types\QualityChecks\EmptyTimeSeriesCheck.cs" />
     <Compile Include="Types\QualityChecks\ActitivityDataCheck.cs" />
+    <Compile Include="Types\QualityChecks\ListExistingFindings.cs" />
     <Compile Include="Types\QualityChecks\TSPEmissionFactorCheck.cs" />
     <Compile Include="Types\Tab.cs">
     </Compile>

@@ -29,13 +29,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             {
                 Finding one = new Types.Finding();
                 one.Title = "Drei";
-                one.CheckId = Id;
+                one.Check = Finding.CheckEnum.Manual;
                 ISet<Finding> oneSet = new HashSet<Finding>();
                 oneSet.Add(one);
 
                 Finding two = new Types.Finding();
                 two.Title = "Vier";
-                two.CheckId = Id;
+                two.Check = Finding.CheckEnum.Manual;
                 ISet<Finding> twoSet = new HashSet<Finding>();
                 twoSet.Add(two);
 

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using M4DBO;
@@ -42,7 +40,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     if (timeSeries != null && timeSeries.TSDatas.Count == 0)
                     {
                         Finding finding = new Finding();
-                        finding.CheckId = Id;
+                        finding.Check = Finding.CheckEnum.Manual;
                         finding.Title = timeSeries.ID + " ist leer";
                         ISet<Finding> result = new HashSet<Finding>();
                         result.Add(finding);
