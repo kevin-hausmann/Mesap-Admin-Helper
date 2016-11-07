@@ -1,4 +1,5 @@
 ﻿using M4DBO;
+using System.Runtime.CompilerServices;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
@@ -51,6 +52,7 @@ namespace UBA.Mesap.AdminHelper.Types
         /// </summary>
         public int Count
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (_countCache < 0 && _filter != null) {

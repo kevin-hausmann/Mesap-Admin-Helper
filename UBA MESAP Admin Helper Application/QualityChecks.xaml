@@ -30,9 +30,18 @@
             <Label Name="_ExecutionTimeLeft" Margin="5" Visibility="Collapsed" />
         </StackPanel>
         <ListView Name="_ResultListView">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Alles kopieren" Click="CopyAll">
+                        <MenuItem.Icon>
+                            <Image Source="Images/copy.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.View>
                 <GridView ColumnHeaderTemplate="{StaticResource Header}">
-                    <GridViewColumn Header="Check" DisplayMemberBinding="{Binding Path=CheckLabel}" Width="150" />
+                    <GridViewColumn Header="Check" DisplayMemberBinding="{Binding Path=Check.Name}" Width="150" />
                     <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path=Title}" Width="300" />
                     <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Path=Description}" Width="500" />
                     <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Path=Category}" Width="200" />

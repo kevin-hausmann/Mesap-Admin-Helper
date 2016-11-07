@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UBA.Mesap.AdminHelper.Types.QualityChecks;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
@@ -18,6 +20,8 @@ namespace UBA.Mesap.AdminHelper.Types
         public abstract string Name { get; }
 
         public abstract string Description { get; }
+
+        public abstract short DatabaseReference { get; }
 
         private bool enabled = false;
         public bool Enabled
@@ -42,23 +46,30 @@ namespace UBA.Mesap.AdminHelper.Types
         }
 
         /// <summary>
-        /// Estimate check running time for the set of time series given by a filter.
+        /// Asynchronously estimate check running time for the set of time series given by a filter.
         /// </summary>
         /// <param name="filter">The filter used to select a sub-set of time series from the database</param>
-        /// <returns>Estimated check running time in milli-seconds</returns>
-        public abstract long EstimateExecutionTime(Filter filter);
+        /// <param name="token">Token to cancel the async operation</param>
+        /// <returns>Task to determine estimated check running time in milli-seconds</returns>
+        public abstract Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken token);
 
         /// <summary>
         /// Estimate average check running time for a single time series.
         /// </summary>
         /// <returns>Average execution time for a single time series in milli-seconds.</returns>
-        protected abstract int EstimateExecutionTime();
+        protected abstract short EstimateExecutionTime();
 
         public abstract Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress);
 
         public int CompareTo(QualityCheck other)
         {
             return Name.CompareTo(other.Name);
+        }
+
+        public static QualityCheck ForDatabaseReference(int id)
+        {
+            // 113 --> Manuell
+            return null;
         }
 
         private readonly Dictionary<string, PropertyChangedEventArgs> _argsCache = new Dictionary<string, PropertyChangedEventArgs>();
@@ -75,14 +86,13 @@ namespace UBA.Mesap.AdminHelper.Types
         }
     }
 
-    public class Finding
+    public class Finding : IExportable
     {
         public String Title { get; set; }
         public String Description { get; set; }
 
-        public CheckEnum Check { get; set; }
-        public String CheckLabel => GetEnumDescription(Check);
-
+        public QualityCheck Check { get; set; }
+        
         public PriorityEnum Priority { get; set; }
         public String PriorityLabel => GetEnumDescription(Priority);
 
@@ -103,14 +113,7 @@ namespace UBA.Mesap.AdminHelper.Types
         public String Category { get; set; }
         
         public enum StatusEnum { New = 106, Done = 107, NoChange = 116 }
-        public enum PriorityEnum { Blocker = 108, High = 109, Average = 110, Low = 111 }
-        public enum CheckEnum
-        {
-            [Description("Manuell erstellt")]
-            Manual = 113,
-            [Description("Feinstaub EF-Vergleich")]
-            EFPbvsPM10 = 114
-        }
+        public enum PriorityEnum { Blocker = 108, High = 109, Medium = 110, Low = 111 }
         public enum ContactEnum
         {
             [Description("Robert Kludt")]
@@ -131,6 +134,33 @@ namespace UBA.Mesap.AdminHelper.Types
         private const int createDateItemNr = 84;
         private const int originItemNr = 92;
         
+        public Finding() { }
+
+        public Finding(QualityCheck check, string title, string description, ContactEnum contact, PriorityEnum prio) : this()
+        {
+            this.Check = check;
+            this.Title = title;
+            this.Description = description;
+            this.contacts.Add(contact);
+            this.Priority = prio;
+        }
+
+        #region IExportable Members
+
+        public string ToCVSString()
+        {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.Append(Check.Id + "\t");
+            buffer.Append(Title + "\t");
+            buffer.Append(Description + "\t");
+            buffer.Append(ContactLabel + "\t");
+            buffer.Append(PriorityLabel + "\t");
+
+            return buffer.ToString();
+        }
+
+        #endregion
 
         public static Finding FromDatabaseEntry(dboEvent dboEvent)
         {
@@ -139,7 +169,7 @@ namespace UBA.Mesap.AdminHelper.Types
             finding.Title = dboEvent.EventItemDatas.GetObject(titleItemNr).TextData;
             finding.Description = dboEvent.EventItemDatas.GetObject(descriptionItemNr).MemoData;
 
-            finding.Check = (CheckEnum) Enum.ToObject(typeof(CheckEnum), dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
+            finding.Check = QualityCheck.ForDatabaseReference(dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
             finding.Priority = (PriorityEnum) Enum.ToObject(typeof(PriorityEnum), dboEvent.EventItemDatas.GetObject(priorityItemNr).ReferenceData);
 
             dboCollection contacts = dboEvent.EventItemDatas.GetCollection(contactItemNr);
@@ -151,7 +181,7 @@ namespace UBA.Mesap.AdminHelper.Types
             return finding;
         }
 
-        private static string GetEnumDescription(Enum value)
+        public static string GetEnumDescription(Enum value)
         {
             FieldInfo field = value.GetType().GetField(value.ToString());
 

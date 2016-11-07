@@ -24,8 +24,9 @@ namespace UBA.Mesap.AdminHelper
         private const string QualityCheckViewName = "QualityCheck";
         private Filter filter;
        
-        private CancellationTokenSource cts;
-        
+        private CancellationTokenSource qualityCheckSource;
+        private CancellationTokenSource estimateDurationSource;
+
         public QualityChecks()
         {
             InitializeComponent();
@@ -35,24 +36,37 @@ namespace UBA.Mesap.AdminHelper
             _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(AvailableChecks);
         }
 
-        private void SelectCheck(object sender, RoutedEventArgs e)
+        private async void SelectCheck(object sender, RoutedEventArgs e)
         {
-            // String checkId = ((CheckBox)sender).Tag.ToString();
-            UpdateFilter();
+            // Cancel all previously start execution time estimation tasks (if any)
+            if (estimateDurationSource != null && !estimateDurationSource.IsCancellationRequested)
+                estimateDurationSource.Cancel();
 
-            IEnumerable<QualityCheck> activeChecks = AvailableChecks.Where(check => check.Enabled);
-            int count = activeChecks.Count();
-            _RunQualityChecks.IsEnabled = count > 0;
-            _ExecutionTimeLeft.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            // Determine active check count and adjust UI
+            int activeCount = AvailableChecks.Count(check => check.Enabled);
+            _RunQualityChecks.IsEnabled = activeCount > 0;
+            _ExecutionTimeLeft.Visibility = activeCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-            long executionTime = activeChecks.Sum(check => check.EstimateExecutionTime(filter));
-            _ExecutionTimeLeft.Content = String.Format("{0:g} for {1} time series", TimeSpan.FromMilliseconds(executionTime), filter.Count);
+            // Estimate cumulative check execution time
+            if (activeCount > 0)
+            {
+                _ExecutionTimeLeft.Content = "Updating...";
+
+                // First, update the filter information
+                await UpdateFilterAsync();
+
+                // Second, check all active checks and sum up execution times
+                estimateDurationSource = new CancellationTokenSource();
+                Task<int>[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
+                int[] durations = await Task.WhenAll(checksEnabled);
+
+                // Third, update UI
+                _ExecutionTimeLeft.Content = String.Format("{0:g} for {1} time series", TimeSpan.FromMilliseconds(durations.Sum()), filter.Count);
+            }
         }
 
         private async void RunQualityChecks(object sender, RoutedEventArgs e)
         {
-            UpdateFilter();
-
             // Prepare UI
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
             _RunQualityChecks.IsEnabled = false;
@@ -60,9 +74,10 @@ namespace UBA.Mesap.AdminHelper
             _ResultListView.Items.Clear();
 
             // Find quality check to run
-            cts = new CancellationTokenSource();
+            qualityCheckSource = new CancellationTokenSource();
+            await UpdateFilterAsync();
             Task[] checksRunning = (from check in AvailableChecks where check.Enabled select
-                             check.RunAsync(filter, cts.Token, new Progress<ISet<Finding>>(results => { _ResultListView.Items.Add(results); }))).ToArray();
+                             check.RunAsync(filter, qualityCheckSource.Token, new Progress<ISet<Finding>>(results => { _ResultListView.Items.Add(results.First()); }))).ToArray();
 
             // Start execution and wait for all checks to finish
             try
@@ -79,15 +94,15 @@ namespace UBA.Mesap.AdminHelper
             _RunQualityChecks.IsEnabled = true;
             _CancelQualityChecks.IsEnabled = false;
             // We cannot reuse the cancel token
-            cts.Dispose();
-            cts = null;
+            qualityCheckSource.Dispose();
+            qualityCheckSource = null;
         }
 
         private void CancelQualityChecks(object sender, RoutedEventArgs e)
         {
             try
             {
-                cts.Cancel();
+                qualityCheckSource.Cancel();
             }
             catch (Exception ex)
             {
@@ -95,7 +110,12 @@ namespace UBA.Mesap.AdminHelper
             }
                 
         }
-        
+
+        private void CopyAll(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(MesapAPIHelper.GetListViewContentsAsCVSString(_ResultListView));
+        }
+
         #region IDatabaseChangedObserver Members
 
         public void DatabaseChanged()
@@ -105,20 +125,23 @@ namespace UBA.Mesap.AdminHelper
 
         #endregion
 
-        private void UpdateFilter()
+        private Task UpdateFilterAsync()
         {
-            // Use filter from quality check view in database, if any
-            dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews(QualityCheckViewName);
-            if (views.Count == 1)
+            return Task.Run(() =>
             {
-                dboTSView view = MesapAPIHelper.GetFirstView(views);
-                filter = new Filter(view.TsFilterGet());
-            }
-            else
-            {
-                // Nothing found, use all time series
-                filter = new Filter(((AdminHelper)Application.Current).database.CreateObject_TSFilter());
-            }
+                // Use filter from quality check view in database, if any
+                dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews(QualityCheckViewName);
+                if (views.Count == 1)
+                {
+                    dboTSView view = MesapAPIHelper.GetFirstView(views);
+                    filter = new Filter(view.TsFilterGet());
+                }
+                else
+                {
+                    // Nothing found, use all time series
+                    filter = new Filter(((AdminHelper)Application.Current).database.CreateObject_TSFilter());
+                }
+            });
         }
 
         private static ISet<QualityCheck> FindQualityChecks()

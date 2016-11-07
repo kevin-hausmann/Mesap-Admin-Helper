@@ -10,18 +10,23 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class ActitivityDataCheck : QualityCheck
     {
-        public override string Id => "AD";
+        public override string Id => "ARfehlt";
 
-        public override string Name => "Aktivitätsdaten";
+        public override string Name => "Aktivitätsrate fehlt";
 
         public override string Description => "Something";
 
-        public override long EstimateExecutionTime(Filter filter)
+        public override short DatabaseReference => 118;
+
+        public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
-            return filter.Count * EstimateExecutionTime();
+            return Task.Run(() =>
+            {
+                return filter.Count * EstimateExecutionTime();
+            }, cancellationToken);
         }
 
-        protected override int EstimateExecutionTime() { return 42; }
+        protected override short EstimateExecutionTime() { return 42; }
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
@@ -30,13 +35,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 Completion = 0;
                 Finding one = new Types.Finding();
                 one.Title = "Eins";
-                one.Check = Finding.CheckEnum.Manual;
+                one.Check = this;
                 ISet<Finding> oneSet = new HashSet<Finding>();
                 oneSet.Add(one);
 
                 Finding two = new Types.Finding();
                 two.Title = "Zwei";
-                two.Check = Finding.CheckEnum.Manual;
+                two.Check = this;
                 ISet<Finding> twoSet = new HashSet<Finding>();
                 twoSet.Add(two);
 

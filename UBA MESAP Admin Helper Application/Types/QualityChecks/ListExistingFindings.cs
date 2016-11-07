@@ -8,18 +8,23 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class ListExistingFindings : QualityCheck
     {
-        public override string Id => "XYZ";
+        public override string Id => "Bestehende";
 
         public override string Name => "Bestehende Fundstellen/Datenprobleme";
 
         public override string Description => "Lädt alle bereits bestehende Einträge von Datenproblemen aus der Datenbank.";
 
-        public override long EstimateExecutionTime(Filter filter)
+        public override short DatabaseReference => -1;
+
+        public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
-            return filter.Count * EstimateExecutionTime();
+            return Task.Run(() =>
+            {
+                return filter.Count * EstimateExecutionTime();
+            }, cancellationToken);
         }
 
-        protected override int EstimateExecutionTime() { return 1; }
+        protected override short EstimateExecutionTime() { return 1; }
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {

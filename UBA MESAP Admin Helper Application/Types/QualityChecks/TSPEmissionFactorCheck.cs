@@ -10,18 +10,23 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class TSPEmissionFactorCheck : QualityCheck
     {
-        public override string Id => "EFTSP";
+        public override string Id => "EFPbvsPM10";
 
         public override string Name => "EF BC <= PM2.5 <= PM10 <= TSP";
 
         public override string Description => "Vergleicht passende Emissionsfaktoren für Stäube und stellt sicher, dass die Fraktionen nicht zu groß sind.";
 
-        public override long EstimateExecutionTime(Filter filter)
+        public override short DatabaseReference => 114;
+
+        public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
-            return filter.Count * EstimateExecutionTime();
+            return Task.Run(() =>
+            {
+                return filter.Count * EstimateExecutionTime();
+            }, cancellationToken);
         }
 
-        protected override int EstimateExecutionTime() { return 112; }
+        protected override short EstimateExecutionTime() { return 112; }
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
@@ -29,13 +34,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             {
                 Finding one = new Types.Finding();
                 one.Title = "Drei";
-                one.Check = Finding.CheckEnum.Manual;
+                one.Check = this;
                 ISet<Finding> oneSet = new HashSet<Finding>();
                 oneSet.Add(one);
 
                 Finding two = new Types.Finding();
                 two.Title = "Vier";
-                two.Check = Finding.CheckEnum.Manual;
+                two.Check = this;
                 ISet<Finding> twoSet = new HashSet<Finding>();
                 twoSet.Add(two);
 
@@ -51,5 +56,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
             }, cancellationToken);
         }
+
+        
     }
 }

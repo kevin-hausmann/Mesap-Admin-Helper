@@ -14,12 +14,17 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         public override string Description => "Identifiziert Zeitreihen, die keinerlei Werte enthalten";
 
-        public override long EstimateExecutionTime(Filter filter)
+        public override short DatabaseReference => 119;
+
+        public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
-            return filter.Count * EstimateExecutionTime();
+            return Task.Run(() =>
+            {
+                return filter.Count * EstimateExecutionTime();
+            }, cancellationToken);
         }
 
-        protected override int EstimateExecutionTime() { return 3; }
+        protected override short EstimateExecutionTime() { return 50; }
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
@@ -36,14 +41,14 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 foreach (object number in list)
                 {
                     dboTS timeSeries = MesapAPIHelper.GetTimeSeries(Convert.ToString(number));
-                    new TimeSeries(timeSeries, 1900, 2100);
+                    TimeSeries ts = new TimeSeries(timeSeries, 1900, 2100);
                     if (timeSeries != null && timeSeries.TSDatas.Count == 0)
                     {
-                        Finding finding = new Finding();
-                        finding.Check = Finding.CheckEnum.Manual;
-                        finding.Title = timeSeries.ID + " ist leer";
                         ISet<Finding> result = new HashSet<Finding>();
-                        result.Add(finding);
+                        result.Add(new Finding(this,
+                            timeSeries.ID + " ist leer",
+                            "Diese Zeitreihe enthält keinerlei Werte " + ts.Legend,
+                            Finding.ContactEnum.Kludt, Finding.PriorityEnum.Low));
 
                         progress.Report(result);
                     }
