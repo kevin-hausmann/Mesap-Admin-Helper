@@ -139,7 +139,7 @@ namespace UBA.Mesap.AdminHelper
 
                 buffer.Append("\n");
 
-                //Content
+                // Content
                 for (int i = 0; i < view.Items.Count; i++)
                 {
                     IExportable item = view.Items[i] as IExportable;

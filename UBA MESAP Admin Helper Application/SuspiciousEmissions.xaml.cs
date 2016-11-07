@@ -6,6 +6,7 @@ using M4DBO;
 using M4UIO;
 using System.Windows.Threading;
 using UBA.Mesap.AdminHelper.Types;
+using System.Text;
 
 namespace UBA.Mesap.AdminHelper
 {
@@ -189,6 +190,11 @@ namespace UBA.Mesap.AdminHelper
             application.uiRoot.ShowFormDataSheet(application.database.DbNr, view.ViewNr, false);
         }
 
+        private void CopyAll(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(MesapAPIHelper.GetListViewContentsAsCVSString(_EmissionsListView));
+        }
+
         private void ResetAllOKFlags(object sender, RoutedEventArgs e)
         {
 
@@ -214,7 +220,7 @@ namespace UBA.Mesap.AdminHelper
         public bool checkConsistent { get; set; }
     }
 
-    class EmissionSeries : TimeSeries
+    class EmissionSeries : TimeSeries, IExportable
     {
         private List<String> _problems = new List<String>();
 
@@ -324,5 +330,21 @@ namespace UBA.Mesap.AdminHelper
             if (change < 1 - allowedChange || change > 1 + allowedChange)
                 _problems.Add("Hohe Abweichung Vorjahr (" + change + ")");
         }
+
+        #region IExportable Members
+
+        public string ToCVSString()
+        {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.Append(Name + "\t");
+            buffer.Append(ID + "\t");
+            buffer.Append(Legend + "\t");
+            buffer.Append(Problems + "\t");
+
+            return buffer.ToString();
+        }
+
+        #endregion
     }
 }
