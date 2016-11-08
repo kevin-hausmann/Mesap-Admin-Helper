@@ -24,7 +24,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             }, cancellationToken);
         }
 
-        protected override short EstimateExecutionTime() { return 50; }
+        protected override short EstimateExecutionTime() { return 75; }
+
+        private const short startYear = 1900;
+        private const short endYear = 2100;
+        private const Finding.PriorityEnum priority = Finding.PriorityEnum.Low;
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
@@ -41,14 +45,14 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 foreach (object number in list)
                 {
                     dboTS timeSeries = MesapAPIHelper.GetTimeSeries(Convert.ToString(number));
-                    TimeSeries ts = new TimeSeries(timeSeries, 1900, 2100);
+                    TimeSeries ts = new TimeSeries(timeSeries, startYear, endYear);
                     if (timeSeries != null && timeSeries.TSDatas.Count == 0)
                     {
                         ISet<Finding> result = new HashSet<Finding>();
                         result.Add(new Finding(this,
                             timeSeries.ID + " ist leer",
                             "Diese Zeitreihe enthält keinerlei Werte " + ts.Legend,
-                            Finding.ContactEnum.Kludt, Finding.PriorityEnum.Low));
+                            Finding.ContactEnum.NN, priority));
 
                         progress.Report(result);
                     }

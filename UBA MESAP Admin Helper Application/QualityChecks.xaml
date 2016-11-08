@@ -3,8 +3,22 @@
     xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <BooleanToVisibilityConverter xaml:Key="BooleanToVisibilityConverter"/>
+        <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Exists}" Value="True">
+                    <Setter Property="Background" Value="Orange" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <DockPanel>
+        <StackPanel Name="_StatusBar" DockPanel.Dock="Bottom" Orientation="Horizontal" Visibility="Collapsed">
+            <Label Name="_StatusFilter" Width="200" />
+            <Label Name="_StatusFindings" Width="200" />
+            <Label Name="_StatusChecks" Width="200" />
+            <Label Name="_StatusTotal" Width="200" />
+            <Label Name="_StatusPerSeries" Width="200" />
+        </StackPanel>
         <ItemsControl Name="_QualityCheckList" DockPanel.Dock="Right">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -29,9 +43,11 @@
             </Button>
             <Label Name="_ExecutionTimeLeft" Margin="5" Visibility="Collapsed" />
         </StackPanel>
-        <ListView Name="_ResultListView">
+        <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple">
             <ListView.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Datenproblem(e) erzeugen" Click="PushFindings"/>
+                    <Separator />
                     <MenuItem Header="Alles kopieren" Click="CopyAll">
                         <MenuItem.Icon>
                             <Image Source="Images/copy.gif" />

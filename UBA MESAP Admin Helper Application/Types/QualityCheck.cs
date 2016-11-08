@@ -61,6 +61,17 @@ namespace UBA.Mesap.AdminHelper.Types
 
         public abstract Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress);
 
+        public bool IsPresent(ISet<Finding> existingFindings, Finding finding)
+        {
+            foreach (Finding existingFinding in existingFindings)
+                if (existingFinding.Check != null &&
+                    existingFinding.Check.Id.Equals(finding.Check.Id) &&
+                    existingFinding.Title.Equals(finding.Title))
+                    return true;
+
+            return false;
+        }
+
         public int CompareTo(QualityCheck other)
         {
             return Name.CompareTo(other.Name);
@@ -68,6 +79,11 @@ namespace UBA.Mesap.AdminHelper.Types
 
         public static QualityCheck ForDatabaseReference(int id)
         {
+            switch (id)
+            {
+                case 119: return new EmptyTimeSeriesCheck(); 
+            }
+
             // 113 --> Manuell
             return null;
         }
@@ -92,6 +108,7 @@ namespace UBA.Mesap.AdminHelper.Types
         public String Description { get; set; }
 
         public QualityCheck Check { get; set; }
+        public bool Exists { get; set; }
         
         public PriorityEnum Priority { get; set; }
         public String PriorityLabel => GetEnumDescription(Priority);
@@ -120,8 +137,10 @@ namespace UBA.Mesap.AdminHelper.Types
             Kludt = 127,
             [Description("Kristina Juhrich")]
             Juhrich = 86,
-            [Description("Deltef Rimkus")]
-            Rimkus = 7
+            [Description("Detlef Rimkus")]
+            Rimkus = 7,
+            [Description("N.N.")]
+            NN = 0
         }
 
         private const int titleItemNr = 77;
@@ -179,6 +198,12 @@ namespace UBA.Mesap.AdminHelper.Types
             }
             
             return finding;
+        }
+
+        public static void ToDatabaseEntry(dboEvent dboEvent, Finding finding)
+        {
+            dboEvent.EventItemDatas.let_Value(titleItemNr, finding.Title);
+            dboEvent.EventItemDatas.let_Value(descriptionItemNr, finding.Description);
         }
 
         public static string GetEnumDescription(Enum value)
