@@ -8,8 +8,6 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class ListExistingFindings : QualityCheck
     {
-        public override string Id => "Bestehende";
-
         public override string Name => "Bestehende Fundstellen/Datenprobleme";
 
         public override string Description => "Lädt alle bereits bestehende Einträge von Datenproblemen aus der Datenbank.";

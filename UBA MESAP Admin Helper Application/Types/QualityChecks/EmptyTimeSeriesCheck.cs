@@ -8,13 +8,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class EmptyTimeSeriesCheck : QualityCheck
     {
-        public override string Id => "Leer";
-
         public override string Name => "Leere Zeitreihen";
 
         public override string Description => "Identifiziert Zeitreihen, die keinerlei Werte enthalten";
 
-        public override short DatabaseReference => 119;
+        public override short DatabaseReference => 118;
 
         public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {

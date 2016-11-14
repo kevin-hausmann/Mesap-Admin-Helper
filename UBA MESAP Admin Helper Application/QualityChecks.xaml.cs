@@ -19,7 +19,7 @@ namespace UBA.Mesap.AdminHelper
     /// </summary>
     public partial class QualityChecks : UserControl, IDatabaseChangedObserver
     {
-        private ISet<QualityCheck> AvailableChecks = FindQualityChecks();
+        private ISet<QualityCheck> AvailableChecks = QualityCheck.FindImplementedChecks();
 
         private const string InventoryID = "Datenprobleme";
         private dboEventInventory existingInventory;
@@ -128,7 +128,9 @@ namespace UBA.Mesap.AdminHelper
             {
                 foreach (Finding finding in results)
                 {
-                    finding.Exists = finding.Check.IsPresent(existingFindings, finding);
+                    finding.Exists = existingFindings.Any(
+                        existing => finding.Check.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
+
                     _ResultListView.Items.Add(finding);
                 }
             };
@@ -225,21 +227,6 @@ namespace UBA.Mesap.AdminHelper
                         existingFindings.Add(Finding.FromDatabaseEntry(entry));
                 }
             });
-        }
-
-        private static ISet<QualityCheck> FindQualityChecks()
-        {
-            // Use reflection to find all sub-classes of QualityCheck, create an instance
-            // for each of those and return the result in a sorted set
-            SortedSet<QualityCheck> checks = new SortedSet<QualityCheck>();
-
-            foreach (Type type in Assembly.GetAssembly(typeof(QualityCheck)).GetTypes()
-                .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(QualityCheck))))
-            {
-                checks.Add((QualityCheck)Activator.CreateInstance(type));
-            }
-            
-            return checks;
         }
     }
 }

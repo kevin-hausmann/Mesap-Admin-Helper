@@ -10,9 +10,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class TSPEmissionFactorCheck : QualityCheck
     {
-        public override string Id => "EFPbvsPM10";
-
-        public override string Name => "EF BC <= PM2.5 <= PM10 <= TSP";
+        public override string Name => "Plausibilität der Verhältnisse einzelner Staubfraktionen und BC";
 
         public override string Description => "Vergleicht passende Emissionsfaktoren für Stäube und stellt sicher, dass die Fraktionen nicht zu groß sind.";
 

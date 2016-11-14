@@ -8,13 +8,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class MissingEmissionFactor : QualityCheck
     {
-        public override string Id => "EFfehlt";
-
-        public override string Name => "Emissionsfaktor fehlt";
+        public override string Name => "Vollständigkeit EF";
 
         public override string Description => "Die Emissionsfaktoren werden auf Vollständigkeit geprüft. In jeder Zeitreihe sollte entweder ein Wert stehen oder ein Interpolation/Extrapolation hinterlegt sein. In Ausnahmefällen kann auch mal ein Notation Key stehen.";
 
-        public override short DatabaseReference => 118;
+        public override short DatabaseReference => 117;
 
         public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {

@@ -2,20 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UBA.Mesap.AdminHelper.Types.QualityChecks;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
-    public abstract class QualityCheck : IComparable<QualityCheck>, INotifyPropertyChanged
+    /// <summary>
+    /// Quality check base class, defines all the interesting methods.
+    /// </summary>
+    public abstract class QualityCheck : IEquatable<QualityCheck>, IComparable<QualityCheck>, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public abstract string Id { get; }
 
         public abstract string Name { get; }
 
@@ -59,17 +59,47 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>Average execution time for a single time series in milli-seconds.</returns>
         protected abstract short EstimateExecutionTime();
 
+        /// <summary>
+        /// Asynchronously execute check on all time series given by filter. Findings will
+        /// be reported using the progress handle provided. When called, the set send via
+        /// progress will contain one or more findings.
+        /// </summary>
+        /// <param name="filter">The filter used to select a sub-set of time series from the database</param>
+        /// <param name="cancellationToken">Token to cancel the async operation</param>
+        /// <param name="progress">Progress handle to report findings with</param>
+        /// <returns>Task instance that runs the check</returns>
         public abstract Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress);
 
-        public bool IsPresent(ISet<Finding> existingFindings, Finding finding)
+        /// <summary>
+        /// Determine whether to findings should be considered equal. The default implementation checks the
+        /// findings titles. Subclass can overwrite this behaviour.
+        /// </summary>
+        /// <param name="existingFinding">Finding already present</param>
+        /// <param name="newFinding">New finding</param>
+        /// <returns>True is the new finding is the same as the one already present</returns>
+        public bool ConsideredEqual(Finding existingFinding, Finding newFinding)
         {
-            foreach (Finding existingFinding in existingFindings)
-                if (existingFinding.Check != null &&
-                    existingFinding.Check.Id.Equals(finding.Check.Id) &&
-                    existingFinding.Title.Equals(finding.Title))
-                    return true;
+            return existingFinding.Title.Equals(newFinding.Title);
+        }
 
-            return false;
+        public bool Equals(QualityCheck other)
+        {
+            return other != null && DatabaseReference == other.DatabaseReference;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return Equals(obj as Finding);
+        }
+
+        public override int GetHashCode()
+        {
+            return DatabaseReference;
         }
 
         public int CompareTo(QualityCheck other)
@@ -79,17 +109,33 @@ namespace UBA.Mesap.AdminHelper.Types
 
         public static QualityCheck ForDatabaseReference(int id)
         {
-            switch (id)
+            if (implementedChecks == null)
+                FindImplementedChecks();
+
+            return implementedChecks.FirstOrDefault(check => check.DatabaseReference == id);
+        }
+
+        private static SortedSet<QualityCheck> implementedChecks;
+        public static ISet<QualityCheck> FindImplementedChecks()
+        {
+            // Use reflection to find all sub-classes of QualityCheck, create an instance
+            // for each of those and return the (cached) result in a sorted set
+            if (implementedChecks == null)
             {
-                case 119: return new EmptyTimeSeriesCheck(); 
+                implementedChecks = new SortedSet<QualityCheck>();
+
+                foreach (Type type in Assembly.GetAssembly(typeof(QualityCheck)).GetTypes()
+                    .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(QualityCheck))))
+                {
+                    implementedChecks.Add((QualityCheck)Activator.CreateInstance(type));
+                }
+
             }
 
-            // 113 --> Manuell
-            return null;
+            return new SortedSet<QualityCheck>(implementedChecks);
         }
 
         private readonly Dictionary<string, PropertyChangedEventArgs> _argsCache = new Dictionary<string, PropertyChangedEventArgs>();
-
         protected virtual void NotifyChange([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
             if (PropertyChanged != null && _argsCache != null && !string.IsNullOrEmpty(memberName))
@@ -104,17 +150,17 @@ namespace UBA.Mesap.AdminHelper.Types
 
     public class Finding : IExportable
     {
-        public String Title { get; set; }
-        public String Description { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
 
         public QualityCheck Check { get; set; }
         public bool Exists { get; set; }
         
         public PriorityEnum Priority { get; set; }
-        public String PriorityLabel => GetEnumDescription(Priority);
+        public string PriorityLabel => GetEnumDescription(Priority);
 
         private ISet<ContactEnum> contacts = new HashSet<ContactEnum>();
-        public String ContactLabel
+        public string ContactLabel
         {
             get
             {
@@ -127,7 +173,7 @@ namespace UBA.Mesap.AdminHelper.Types
             }
         }
 
-        public String Category { get; set; }
+        public string Category { get; set; }
         
         public enum StatusEnum { New = 106, Done = 107, NoChange = 116 }
         public enum PriorityEnum { Blocker = 108, High = 109, Medium = 110, Low = 111 }
@@ -170,7 +216,7 @@ namespace UBA.Mesap.AdminHelper.Types
         {
             StringBuilder buffer = new StringBuilder();
 
-            buffer.Append(Check.Id + "\t");
+            buffer.Append(Check.Name + "\t");
             buffer.Append(Title + "\t");
             buffer.Append(Description + "\t");
             buffer.Append(ContactLabel + "\t");

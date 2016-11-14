@@ -10,13 +10,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class ActitivityDataCheck : QualityCheck
     {
-        public override string Id => "ARfehlt";
+        public override string Name => "AR der aktuellen Berichtsrunde fehlt";
 
-        public override string Name => "Aktivitätsrate fehlt";
+        public override string Description => "Untersucht alle AR für das aktuelle Berichtjahr und erzeugt einen Eintrag, wenn der Wert leer ist und im vorigen Jahr nicht leer war.";
 
-        public override string Description => "Something";
-
-        public override short DatabaseReference => 118;
+        public override short DatabaseReference => 119;
 
         public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
