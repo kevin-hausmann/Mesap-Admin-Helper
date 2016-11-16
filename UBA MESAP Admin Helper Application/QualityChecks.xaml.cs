@@ -63,8 +63,7 @@ namespace UBA.Mesap.AdminHelper
                 await UpdateFilterAsync();
 
                 // Second, check all active checks and sum up execution times
-                if (estimateDurationSource != null)
-                    estimateDurationSource.Dispose();
+                estimateDurationSource?.Dispose();
                 estimateDurationSource = new CancellationTokenSource();
                 Task<int>[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
                 int[] durations = await Task.WhenAll(checksEnabled);
@@ -106,7 +105,11 @@ namespace UBA.Mesap.AdminHelper
             }
             catch (Exception ex)
             {
-                foreach (Task faulted in checksRunning.Where(t => t.IsFaulted)) { Console.WriteLine("Task failed: " + ex.Message); }
+                foreach (Task faulted in checksRunning.Where(t => t.IsFaulted))
+                {
+                    Console.WriteLine("Task \"{0}\" failed!", faulted.Id);
+                    Console.WriteLine(faulted.Exception);
+                }
             }
 
             // Execution finished, update to UI

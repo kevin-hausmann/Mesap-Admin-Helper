@@ -134,46 +134,51 @@ namespace UBA.Mesap.AdminHelper.Types
 
         protected ISet<Finding.ContactEnum> ContactsForTimeSeries(TimeSeries series)
         {
-            /*// Result object, set below
-            dboAnnexItemData result = null;
-
-            // Get documentation for this time series
-            dboAnnexObjects objects = _timeSeries.Database.CreateObject_AnnexObjects("");
-            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, _timeSeries.TsNr, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0, false);
-            dboAnnexObject annexObject = objects.GetObject_Docu(_timeSeries.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
-
-            // No documentation -> return "null"
-            if (annexObject == null) return null;
-
-            // Get all documentation components for the time series
-            dboAnnexSetLinks links = _timeSeries.Database.CreateObject_AnnexSetLinks("");
-            links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu, true);
-
-            // ... and search them for uncertainties
-            IEnumerator linksEnum = links.GetEnumerator();
-            while (linksEnum.MoveNext())
-            {
-                dboAnnexSetLink link = linksEnum.Current as dboAnnexSetLink;
-                // Is this component for uncertainties?
-                if (link.ComponentNr == (int)UncertaintyComponent.self)
-                {
-                    // Extract component data
-                    dboAnnexItemDatas datas = _timeSeries.Database.CreateObject_AnnexItemDatas("");
-                    datas.DbReadByItemNr(link.AnnexSetNr, (int)UncertaintyComponent.self, (int)field, false, link.AnnexSetLinkNr, true);
-
-                    // Set first item (there should only be one) as return value
-                    IEnumerator dataEnum = datas.GetEnumerator();
-                    dataEnum.MoveNext();
-                    result = dataEnum.Current as dboAnnexItemData;
-                    break;
-                }
-            }
-
-            return result;*/
             HashSet<Finding.ContactEnum> result = new HashSet<Finding.ContactEnum>();
-            result.Add(Finding.ContactEnum.Hausmann);
+            
+            // Get documentation for this time series
+            dboAnnexObjects objects = series.Object.Database.CreateObject_AnnexObjects();
+            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, series.Object.TsNr);
+            dboAnnexObject annexObject = objects.GetObject_Docu(series.Object.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
 
+            if (annexObject != null)
+            {
+                // Get all documentation components for the time series
+                dboAnnexSetLinks links = series.Object.Database.CreateObject_AnnexSetLinks();
+                links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu);
+
+                // Find contact information
+                foreach (dboAnnexSetLink link in links)
+                    if (link.ComponentNr == 12)
+                    {
+                        dboAnnexItemDatas datas = series.Object.Database.CreateObject_AnnexItemDatas();
+                        datas.DbReadByItemNr(link.AnnexSetNr, 12, 63, false, 0);
+
+                        IEnumerator dataEnum = datas.GetEnumerator();
+                        if (dataEnum.MoveNext())
+                            result.Add(FindEnumValueForAnnexItemPoolReference((dataEnum.Current as dboAnnexItemData).ReferenceData));
+                    }
+            }
+            
             return result;
+        }
+
+        private Finding.ContactEnum FindEnumValueForAnnexItemPoolReference(int referenceData)
+        {
+            switch (referenceData)
+            {
+                case 154: return Finding.ContactEnum.Schiller;
+                case 155: return Finding.ContactEnum.Rimkus;
+                case 232: return Finding.ContactEnum.Boettcher;
+                case 270: return Finding.ContactEnum.Kludt; 
+                case 278: return Finding.ContactEnum.Kotzulla;
+                case 294: return Finding.ContactEnum.Juhrich;
+                case 508: return Finding.ContactEnum.Kuntze;
+                case 556: return Finding.ContactEnum.Hausmann;
+                case 624: return Finding.ContactEnum.Doering;
+                case 743: return Finding.ContactEnum.Reichel;
+                default: return 0;
+            }
         }
 
         public static QualityCheck ForDatabaseReference(int id)
@@ -238,12 +243,12 @@ namespace UBA.Mesap.AdminHelper.Types
         {
             public Category(string name, int id)
             {
-                this.Name = name;
-                this.Id = id;
+                Name = name;
+                Id = id;
             }
 
-            public string Name { get; set; }
-            public int Id { get; set; }
+            public string Name { get; }
+            public int Id { get; }
         }
 
         private ISet<Category> categories = new HashSet<Category>();
@@ -255,16 +260,22 @@ namespace UBA.Mesap.AdminHelper.Types
         {
             [Description("Detlef Rimkus")]
             Rimkus = 7,
+            [Description("Stephan Schiller")]
+            Schiller = 35,
             [Description("David Kuntze")]
             Kuntze = 72,
             [Description("Kristina Juhrich")]
             Juhrich = 86,
+            [Description("Christian Böttcher")]
+            Boettcher = 123,
             [Description("Michael Kotzulla")]
             Kotzulla = 124,
             [Description("Kevin Hausmann")]
             Hausmann = 125,
             [Description("Robert Kludt")]
             Kludt = 127,
+            [Description("Ulrike Döring")]
+            Doering = 222,
             [Description("Jens Reichel")]
             Reichel = 227
         }

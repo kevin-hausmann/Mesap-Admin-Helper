@@ -46,7 +46,11 @@
         <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Datenproblem(e) erzeugen" Click="PushFindings"/>
+                    <MenuItem Header="Datenproblem(e) erzeugen" Click="PushFindings">
+                        <MenuItem.Icon>
+                            <Image Source="Images/filter.gif" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
                     <MenuItem Header="Alles kopieren" Click="CopyAll">
                         <MenuItem.Icon>
