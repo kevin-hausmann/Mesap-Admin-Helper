@@ -47,7 +47,9 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                         result.Add(new Finding(this,
                             "Emissionsfaktor fehlt: " + series.ID + ", " + year,
                             "Kein Emissionsfaktor vorhanden oder gemappt" + " (" + series.Legend + ")",
-                            Finding.ContactEnum.Juhrich, Finding.PriorityEnum.Medium));
+                            CategoriesForTimeSeries(series),
+                            ContactsForTimeSeries(series),
+                            Finding.PriorityEnum.Medium));
 
                         progress.Report(result);
                     }

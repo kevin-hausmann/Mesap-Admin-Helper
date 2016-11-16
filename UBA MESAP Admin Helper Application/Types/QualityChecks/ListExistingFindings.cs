@@ -47,7 +47,6 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                         progress.Report(result);
                         cancellationToken.ThrowIfCancellationRequested();
                         Completion = (int)(count++ / (float)list.Count * 100);
-                        Thread.Sleep(TimeSpan.FromMilliseconds(100));
                     }
                 }
 

@@ -23,7 +23,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel MaxWidth="250px">
-                        <CheckBox IsChecked="{Binding Enabled}" Click="SelectCheck" Tag="{Binding Id}" Margin="5" ToolTip="{Binding Description}">
+                        <CheckBox IsChecked="{Binding Enabled}" Click="SelectCheck" Tag="{Binding DatabaseReference}" Margin="5" ToolTip="{Binding Description}">
                             <TextBlock Text="{Binding Name}" />
                         </CheckBox>
                         <ProgressBar Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="5, 2" Height="5" Visibility="{Binding Enabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -60,7 +60,7 @@
                     <GridViewColumn Header="Check" DisplayMemberBinding="{Binding Path=Check.Name}" Width="150" />
                     <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path=Title}" Width="300" />
                     <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Path=Description}" Width="500" />
-                    <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Path=Category}" Width="200" />
+                    <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Path=CategoryLabel}" Width="200" />
                     <GridViewColumn Header="Contact" DisplayMemberBinding="{Binding Path=ContactLabel}" Width="200" />
                     <GridViewColumn Header="Priority" DisplayMemberBinding="{Binding Path=Priority}" Width="100"/>
                 </GridView>

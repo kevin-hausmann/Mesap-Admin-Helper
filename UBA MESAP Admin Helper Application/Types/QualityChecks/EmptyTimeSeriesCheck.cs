@@ -50,7 +50,9 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                         result.Add(new Finding(this,
                             timeSeries.ID + " ist leer",
                             "Diese Zeitreihe enthält keinerlei Werte " + ts.Legend,
-                            Finding.ContactEnum.NN, priority));
+                            CategoriesForTimeSeries(ts),
+                            ContactsForTimeSeries(ts),
+                            priority));
 
                         progress.Report(result);
                     }

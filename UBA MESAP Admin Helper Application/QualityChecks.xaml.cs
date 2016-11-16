@@ -128,8 +128,8 @@ namespace UBA.Mesap.AdminHelper
             {
                 foreach (Finding finding in results)
                 {
-                    finding.Exists = existingFindings.Any(
-                        existing => finding.Check.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
+                    finding.Exists = existingFindings.Any(existing => finding.Check != null &&
+                        finding.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
 
                     _ResultListView.Items.Add(finding);
                 }
@@ -160,8 +160,18 @@ namespace UBA.Mesap.AdminHelper
                 {
                     if (finding.Exists) continue;
 
-                    Finding.ToDatabaseEntry(events.Add(handle, 0), finding);
-                    finding.Exists = true;
+                    dboEvent newEvent = events.Add(handle, 0);
+                    try
+                    {
+                        Finding.ToDatabaseEntry(newEvent, finding);
+                        finding.Exists = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        events.Delete(newEvent.EventNr);
+                        MessageBox.Show(String.Format("Finding \"{0}\" kann nicht angelegt werden:\n{1}", finding.Title, ex.Message),
+                            "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    }
                 }
 
                 events.DbUpdateAll(handle);
@@ -172,7 +182,7 @@ namespace UBA.Mesap.AdminHelper
             else
             {
                 MessageBox.Show("Kein Ereignisinventar mit der ID \"" + InventoryID + "\" gefunden!",
-                "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
 

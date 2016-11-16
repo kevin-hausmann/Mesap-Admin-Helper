@@ -1,5 +1,6 @@
 ﻿using M4DBO;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace UBA.Mesap.AdminHelper.Types
     /// </summary>
     public abstract class QualityCheck : IEquatable<QualityCheck>, IComparable<QualityCheck>, INotifyPropertyChanged
     {
+        private const int CategoryDimensionNumber = 13;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public abstract string Name { get; }
@@ -107,6 +110,72 @@ namespace UBA.Mesap.AdminHelper.Types
             return Name.CompareTo(other.Name);
         }
 
+        /// <summary>
+        /// Find source category information for given time series.
+        /// Assumes the series' related key have already been read.
+        /// </summary>
+        /// <param name="series">The time series to inspect.</param>
+        /// <returns>A number of category objects (likely 1) or an empyt set,
+        /// if no descriptor is set. Never null.</returns>
+        protected ISet<Finding.Category> CategoriesForTimeSeries(TimeSeries series)
+        {
+            HashSet<Finding.Category> result = new HashSet<Finding.Category>();
+
+            foreach (dboTSKey key in series.Object.TSKeys)
+                if (key.DimNr == CategoryDimensionNumber)
+                {
+                    dboTreeObject descriptor = series.Object.Database.TreeObjects[key.ObjNr];
+                    if (descriptor != null)
+                        result.Add(new Finding.Category(descriptor.Name, descriptor.ObjNr));
+                }
+
+            return result;
+        }
+
+        protected ISet<Finding.ContactEnum> ContactsForTimeSeries(TimeSeries series)
+        {
+            /*// Result object, set below
+            dboAnnexItemData result = null;
+
+            // Get documentation for this time series
+            dboAnnexObjects objects = _timeSeries.Database.CreateObject_AnnexObjects("");
+            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, _timeSeries.TsNr, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0, false);
+            dboAnnexObject annexObject = objects.GetObject_Docu(_timeSeries.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
+
+            // No documentation -> return "null"
+            if (annexObject == null) return null;
+
+            // Get all documentation components for the time series
+            dboAnnexSetLinks links = _timeSeries.Database.CreateObject_AnnexSetLinks("");
+            links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu, true);
+
+            // ... and search them for uncertainties
+            IEnumerator linksEnum = links.GetEnumerator();
+            while (linksEnum.MoveNext())
+            {
+                dboAnnexSetLink link = linksEnum.Current as dboAnnexSetLink;
+                // Is this component for uncertainties?
+                if (link.ComponentNr == (int)UncertaintyComponent.self)
+                {
+                    // Extract component data
+                    dboAnnexItemDatas datas = _timeSeries.Database.CreateObject_AnnexItemDatas("");
+                    datas.DbReadByItemNr(link.AnnexSetNr, (int)UncertaintyComponent.self, (int)field, false, link.AnnexSetLinkNr, true);
+
+                    // Set first item (there should only be one) as return value
+                    IEnumerator dataEnum = datas.GetEnumerator();
+                    dataEnum.MoveNext();
+                    result = dataEnum.Current as dboAnnexItemData;
+                    break;
+                }
+            }
+
+            return result;*/
+            HashSet<Finding.ContactEnum> result = new HashSet<Finding.ContactEnum>();
+            result.Add(Finding.ContactEnum.Hausmann);
+
+            return result;
+        }
+
         public static QualityCheck ForDatabaseReference(int id)
         {
             if (implementedChecks == null)
@@ -148,6 +217,9 @@ namespace UBA.Mesap.AdminHelper.Types
         }
     }
 
+    /// <summary>
+    /// A quality check finding represents a potential issue found by a quality check.
+    /// </summary>
     public class Finding : IExportable
     {
         public string Title { get; set; }
@@ -160,53 +232,63 @@ namespace UBA.Mesap.AdminHelper.Types
         public string PriorityLabel => GetEnumDescription(Priority);
 
         private ISet<ContactEnum> contacts = new HashSet<ContactEnum>();
-        public string ContactLabel
+        public string ContactLabel => String.Join("|", contacts.Select(contact => GetEnumDescription(contact)));
+
+        public class Category
         {
-            get
+            public Category(string name, int id)
             {
-                string result = "";
-
-                foreach (ContactEnum contact in contacts)
-                    result += GetEnumDescription(contact) + "|";
-
-                return result.Substring(0, result.Length - 1);
+                this.Name = name;
+                this.Id = id;
             }
+
+            public string Name { get; set; }
+            public int Id { get; set; }
         }
 
-        public string Category { get; set; }
-        
+        private ISet<Category> categories = new HashSet<Category>();
+        public string CategoryLabel => String.Join("|", categories.Select(category => category.Name));
+                
         public enum StatusEnum { New = 106, Done = 107, NoChange = 116 }
         public enum PriorityEnum { Blocker = 108, High = 109, Medium = 110, Low = 111 }
         public enum ContactEnum
         {
-            [Description("Robert Kludt")]
-            Kludt = 127,
-            [Description("Kristina Juhrich")]
-            Juhrich = 86,
             [Description("Detlef Rimkus")]
             Rimkus = 7,
-            [Description("N.N.")]
-            NN = 0
+            [Description("David Kuntze")]
+            Kuntze = 72,
+            [Description("Kristina Juhrich")]
+            Juhrich = 86,
+            [Description("Michael Kotzulla")]
+            Kotzulla = 124,
+            [Description("Kevin Hausmann")]
+            Hausmann = 125,
+            [Description("Robert Kludt")]
+            Kludt = 127,
+            [Description("Jens Reichel")]
+            Reichel = 227
         }
 
         private const int titleItemNr = 77;
         private const int descriptionItemNr = 78;
 
         private const int categoryItemNr = 79;
-        private const int statusItemNr = 80;
+        // private const int statusItemNr = 80;
         private const int priorityItemNr = 81;
         private const int contactItemNr = 82;
-        private const int createDateItemNr = 84;
+        // private const int createDateItemNr = 84;
         private const int originItemNr = 92;
         
         public Finding() { }
 
-        public Finding(QualityCheck check, string title, string description, ContactEnum contact, PriorityEnum prio) : this()
+        public Finding(QualityCheck check, string title, string description,
+            ISet<Category> categories, ISet<ContactEnum> contacts, PriorityEnum prio) : this()
         {
             this.Check = check;
             this.Title = title;
             this.Description = description;
-            this.contacts.Add(contact);
+            this.categories = categories;
+            this.contacts = contacts;
             this.Priority = prio;
         }
 
@@ -237,19 +319,103 @@ namespace UBA.Mesap.AdminHelper.Types
             finding.Check = QualityCheck.ForDatabaseReference(dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
             finding.Priority = (PriorityEnum) Enum.ToObject(typeof(PriorityEnum), dboEvent.EventItemDatas.GetObject(priorityItemNr).ReferenceData);
 
-            dboCollection contacts = dboEvent.EventItemDatas.GetCollection(contactItemNr);
-            foreach(dboEventItemData data in contacts)
-            {
-                finding.contacts.Add((ContactEnum) Enum.ToObject(typeof(ContactEnum), data.ReferenceData));
-            }
+            foreach (dboEventItemData contact in dboEvent.EventItemDatas.GetCollection(contactItemNr))
+                if (Enum.IsDefined(typeof(ContactEnum), contact.ReferenceData))
+                    finding.contacts.Add((ContactEnum)Enum.ToObject(typeof(ContactEnum), contact.ReferenceData));
+                else
+                    Console.WriteLine(String.Format("Unknown contact reference {0} for finding \"{1}\"", contact.ReferenceData, finding.Title));
             
+            foreach (dboEventItemData category in dboEvent.EventItemDatas.GetCollection(categoryItemNr))
+            {
+                dboTreeObject descriptor = dboEvent.Database.TreeObjects[category.ReferenceData];
+                if (descriptor != null)
+                   finding.categories.Add(new Category(descriptor.Name, descriptor.ObjNr));
+                else
+                    Console.WriteLine(String.Format("Unknown descriptor reference {0} for finding \"{1}\"", category.ReferenceData, finding.Title));
+            }
+
             return finding;
         }
 
         public static void ToDatabaseEntry(dboEvent dboEvent, Finding finding)
         {
-            dboEvent.EventItemDatas.let_Value(titleItemNr, finding.Title);
-            dboEvent.EventItemDatas.let_Value(descriptionItemNr, finding.Description);
+            if (dboEvent.IsWriteProtected || !dboEvent.IsModifyEnabled)
+                throw new Exception(String.Format("Database event object with number \"{0}\" is locked.", dboEvent.EventNr));
+            else if (!FindingHasProperData(finding))
+                throw new Exception("Finding does not have all its required fields set.");
+            else
+            {
+                SetFieldValueSecurely(dboEvent, titleItemNr, "title", finding.Title);
+                SetFieldValueSecurely(dboEvent, descriptionItemNr, "description", finding.Description);
+
+                SetFieldValueSecurely(dboEvent, originItemNr, "origin", finding.Check.DatabaseReference);
+                SetFieldValueSecurely(dboEvent, priorityItemNr, "priority", (int)finding.Priority);
+
+                SetFieldValueSecurely(dboEvent, contactItemNr, "contact", finding.contacts.Select(contact => (int)contact));
+                SetFieldValueSecurely(dboEvent, categoryItemNr, "category", finding.categories.Select(category => category.Id));
+            }
+        }
+
+        private static bool FindingHasProperData(Finding finding)
+        {
+            return finding != null && !String.IsNullOrWhiteSpace(finding.Title)
+                && !String.IsNullOrWhiteSpace(finding.Description)
+                && finding.Check != null
+                && finding.Priority != 0
+                && finding.contacts != null && finding.contacts.FirstOrDefault() != 0;
+        }
+
+        private static void SetFieldValueSecurely(dboEvent dboEvent, int fieldNr, string fieldName, object value)
+        {
+            // First, test the parameters we are given and make sure they make sense for
+            // the database we are on. We do not want to create incomplete findings. For
+            // any missing piece we throw an exception with a proper description of the problem.
+            dboEventInventory inventory = dboEvent.Database.EventInventories[dboEvent.InventoryNr];
+            dboEventItem field = inventory.EventItems[fieldNr];
+
+            if (field == null)
+                throw new Exception(String.Format("Field with number \"{0}\", supposedly named \"{1}\", not found.", fieldNr, fieldName));
+            else
+                switch (field.ItemType)
+                {
+                    case mspEventItemTypeEnum.mspEventItemTypeTextPool:
+                        // Make sure the text pool element we want to set exists
+                        dboEventItemTextPools pools = inventory.CreateObject_EventItemTextPools();
+                        pools.DbReadByItemNr(fieldNr, true);
+
+                        if (!pools.Exist(Int32.Parse(value.ToString())))
+                            throw new Exception(String.Format("Text pool value \"{0}\" does not exist for field \"{1}\".", value, fieldName));
+                        else break;
+                    case mspEventItemTypeEnum.mspEventItemTypeUser:
+                        // Make sure all users exist. TODO: Make sure users are in the correct group.
+                        foreach(object user in (IEnumerable)value)
+                            if (dboEvent.Database.DbAccessUsers[Int32.Parse(user.ToString())] == null)
+                                throw new Exception(String.Format("User with number \"{0}\" does not exist in database.", user));
+
+                        break;
+                    case mspEventItemTypeEnum.mspEventItemTypeMultiDescriptor:
+                        // Make sure all categories exist.
+                        foreach (object category in (IEnumerable)value)
+                            if (dboEvent.Database.TreeObjects[Int32.Parse(category.ToString())] == null)
+                                throw new Exception(String.Format("Category with number \"{0}\" does not exist in database.", category));
+
+                        break;
+                }
+
+            // Okay, we made it here, so it is safe to assume that all preconditions are met.
+            // Go set values on the event (finding), might either be multiple or a single one.
+            if (!(value is string) && value is IEnumerable)
+            {
+                dboList list = new dboList();
+                foreach (object item in (IEnumerable)value)
+                    if (item != null)
+                        list.Add(item);
+
+                if (list.Count > 0)
+                    dboEvent.EventItemDatas.set_Value(fieldNr, list);
+            }
+            else if (value != null)
+                dboEvent.EventItemDatas.let_Value(fieldNr, value);
         }
 
         public static string GetEnumDescription(Enum value)
