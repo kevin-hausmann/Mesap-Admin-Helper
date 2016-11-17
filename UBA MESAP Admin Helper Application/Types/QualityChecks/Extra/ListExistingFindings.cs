@@ -9,16 +9,20 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
     class ListExistingFindings : QualityCheck
     {
         public override string Name => "Bestehende Fundstellen/Datenprobleme";
-
         public override string Description => "Lädt alle bereits bestehende Einträge von Datenproblemen aus der Datenbank.";
-
         public override short DatabaseReference => -1;
+
+        private const string InventoryID = "Datenprobleme";
 
         public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                return filter.Count * EstimateExecutionTime();
+                dboEventInventory inventory = filter.Object.Database.EventInventories[InventoryID];
+                dboEvents list = inventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
+                list.DbReadAll();
+
+                return list.Count * EstimateExecutionTime();
             }, cancellationToken);
         }
 
@@ -29,8 +33,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             return Task.Run(() =>
             {
                 Completion = 0;
-                const string InventoryID = "Datenprobleme";
-
+                
                 dboDatabase db = filter.Object.Database;
                 if (db.EventInventories.Exist(InventoryID))
                 {

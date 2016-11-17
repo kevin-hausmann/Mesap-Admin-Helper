@@ -2,15 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using UBA.Mesap.AdminHelper.Types;
+using UBA.Mesap.AdminHelper.Types.QualityChecks;
 
 namespace UBA.Mesap.AdminHelper
 {

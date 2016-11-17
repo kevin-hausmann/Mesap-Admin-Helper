@@ -100,6 +100,16 @@ namespace UBA.Mesap.AdminHelper
         }
 
         /// <summary>
+        /// Gets time series by number.
+        /// </summary>
+        /// <param name="number">Database number of time series requested.</param>
+        /// <returns>The time series or <i>null</i> if no time series with given number exists.</returns>
+        public static dboTS GetTimeSeries(int number)
+        {
+            return ((AdminHelper)Application.Current).database.CreateObject_TSs(number.ToString())[number];
+        }
+
+        /// <summary>
         /// Calculates the number of timeseries filtered by a filter.
         /// </summary>
         /// <param name="filter">Filter to evaluate.</param>
