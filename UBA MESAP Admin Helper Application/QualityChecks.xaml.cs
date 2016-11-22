@@ -130,7 +130,7 @@ namespace UBA.Mesap.AdminHelper
                 foreach (Finding finding in results)
                 {
                     finding.Exists = existingFindings.Any(existing => finding.Check != null &&
-                        finding.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
+                        finding.Check.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
 
                     _ResultListView.Items.Add(finding);
                 }
