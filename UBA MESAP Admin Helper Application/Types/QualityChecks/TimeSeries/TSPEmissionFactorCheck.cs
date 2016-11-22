@@ -11,43 +11,19 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         protected override short StartYear => 1990;
         protected override short EndYear => 2020;
+        protected override Finding.PriorityEnum DefaultPriority => Finding.PriorityEnum.High;
 
         protected override int FindWorkloadOverhead => 10;
+        protected override int[,] FindWorkloadFilter => new int[,]
+        {
+            {(int)DimensionEnum.Type, (int)DescriptorEnum.EF},
+            {(int)DimensionEnum.Pollutant, (int)DescriptorEnum.TSP}
+        };
         protected override short EstimateExecutionTime() => 100;
 
-        protected override void CheckTimeSeries(TimeSeries timeSeries, IProgress<ISet<Finding>> progress)
+        protected override void CheckTimeSeries(TimeSeries series, IProgress<ISet<Finding>> progress)
         {
             // Check matching PM10, PM2.5 and BC EFs
-        }
-
-        protected override ISet<int> FindWorkload(Filter filter, bool updateCompletion)
-        {
-            ISet<int> result = new HashSet<int>();
-            /*dboList list = TSNrListFromFilter(filter);
-            int count = 0;
-
-            foreach (int number in list)
-            {
-                bool isEF = false;
-                bool isTSP = false;
-                
-                dboTS timeSeries = MesapAPIHelper.GetTimeSeries(number);
-                timeSeries.DbReadRelatedKeys();
-                dboTSKeys keys = timeSeries.TSKeys;
-                foreach (dboTSKey key in keys)
-                {
-                    if (key.DimNr == 1 && key.ObjNr == 50003) isEF = true;
-                    else if (key.DimNr == 2 && key.ObjNr == 1003) isTSP = true;
-                }
-
-                if (isEF && isTSP)
-                    result.Add(number);
-
-                if (updateCompletion)
-                    Completion = (int)(++count / (float)list.Count * 100) / 2;
-            }*/
-
-            return result;
         }
     }
 }

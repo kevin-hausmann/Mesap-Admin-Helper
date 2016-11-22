@@ -25,10 +25,41 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected abstract short EndYear { get; }
 
         /// <summary>
+        /// Priority values used for findings created by Report().
+        /// </summary>
+        protected abstract Finding.PriorityEnum DefaultPriority { get; }
+
+        /// <summary>
         /// Timespan in ms need to triage a time series in FindWorkload().
         /// This will be used to estimate execution times.
         /// </summary>
         protected abstract int FindWorkloadOverhead { get; }
+
+        /// <summary>
+        /// Filter definition for the task, CheckTimeSeries() will be called
+        /// for matching series only. Format:
+        /// [[dimension1, descriptor1, ..., descriptorX], [dimension1, descriptor1, ..., descriptorX], ...]
+        /// Matching series have one or more descriptors set for each dimension listed.
+        /// Use -1 as wildcard, an empty filter matches all series.
+        /// </summary>
+        protected abstract int[,] FindWorkloadFilter { get; }
+        protected enum DimensionEnum
+        {
+            Type = 1,
+            Area = 2,
+            Pollutant = 4
+        }
+        protected enum DescriptorEnum
+        {
+            Wildcard = 0,
+            AD = 50001,
+            EF = 50003,
+            EM = 50004,
+            ABL = 1001,
+            NBL = 1002,
+            Germany = 1003,
+            TSP = 3031,
+        }
 
         public sealed override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
@@ -73,18 +104,23 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected abstract void CheckTimeSeries(TimeSeries series, IProgress<ISet<Finding>> progress);
 
         /// <summary>
-        /// Use the filter given to determine which time series will be checked.
-        /// This default implementation returns all time series, sub-classes can
-        /// override this behaviour as needed.
+        /// Convenience to report a finding with common values. Uses the checks DefaultPriority and
+        /// will read contact and category from time series object given.
         /// </summary>
-        /// <param name="filter">Filter to check for eligible time series</param>
-        /// <param name="updateCompletion">Whether the method should update the
-        /// Completion property while active. If true, make sure to advance Completion
-        /// from 0 to 50 while running.</param>
-        /// <returns>The list of time series numbers the check should run on.
-        /// The list will be processed by RunAsync and each individual series will
-        /// be passed to CheckTimeSeries.</returns>
-        protected virtual ISet<int> FindWorkload(Filter filter, bool updateCompletion)
+        /// <param name="progress">Progress handle to report to</param>
+        /// <param name="series">Time series checked</param>
+        /// <param name="title">The finding's title</param>
+        /// <param name="description">The finding's description</param>
+        protected void Report(IProgress<ISet<Finding>> progress, TimeSeries series, string title, string description)
+        {
+            ISet<Finding> result = new HashSet<Finding>();
+            result.Add(new Finding(this, series.Object.TsNr,
+                title, description, CategoriesForTimeSeries(series), ContactsForTimeSeries(series), DefaultPriority));
+
+            progress.Report(result);
+        }
+
+        private ISet<int> FindWorkload(Filter filter, bool updateCompletion)
         {
             ISet<int> result = new HashSet<int>();
             dboList list = TSNrListFromFilter(filter);
@@ -92,13 +128,37 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
             foreach (int number in list)
             {
-                result.Add(number);
+                if (FindWorkloadFilter.Length == 0 || MatchesWorkloadFilter(number))
+                    result.Add(number);
 
                 if (updateCompletion)
                     Completion = (int)(++count / (float)list.Count * 100) / 2;
             }
-            
+
             return result;
+        }
+
+        private bool MatchesWorkloadFilter(int number)
+        {
+            dboTS timeSeries = MesapAPIHelper.GetTimeSeries(number);
+            timeSeries.DbReadRelatedKeys();
+            dboTSKeys keys = timeSeries.TSKeys;
+
+            for (int i = 0; i < FindWorkloadFilter.GetLength(0); i++)
+            {
+                dboCollection descriptors = keys.GetCollection(0, FindWorkloadFilter[i, 0]);
+
+                bool found = false;
+                for (int j = 1; j < FindWorkloadFilter.GetLength(1); j++)
+                    foreach (dboTSKey key in descriptors)
+                        if (key.ObjNr == FindWorkloadFilter[i, j])
+                            found = true;
+                
+                if (!found)
+                    return false;
+            }               
+
+            return true;
         }
     }
 }

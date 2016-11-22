@@ -244,7 +244,7 @@ namespace UBA.Mesap.AdminHelper.Types
         /// </summary>
         /// <param name="year">Year to retrieve</param>
         /// <returns>Data object, may be null</returns>
-        protected DataValue RetrieveData(int year)
+        public DataValue RetrieveData(int year)
         {
             int period = _timeSeries.Database.Units.TkDateToPeriod(new DateTime(year, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
 
