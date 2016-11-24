@@ -12,9 +12,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         public override string Description => "Lädt alle bereits bestehende Einträge von Datenproblemen aus der Datenbank.";
         public override short DatabaseReference => -1;
 
+        public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(18);
+        
         private const string InventoryID = "Datenprobleme";
 
-        public override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
+        public override Task EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
@@ -22,16 +24,18 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 dboEvents list = inventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
                 list.DbReadAll();
 
-                return list.Count * EstimateExecutionTime();
+                ElementCount = list.Count;
+                EstimatedExecutionTime = TimeSpan.FromMilliseconds(list.Count * EstimatedExecutionTimePerElement.TotalMilliseconds);
             }, cancellationToken);
         }
-
-        protected override short EstimateExecutionTime() { return 1; }
 
         public override Task RunAsync(Filter filter, CancellationToken cancellationToken, IProgress<ISet<Finding>> progress)
         {
             return Task.Run(() =>
             {
+                Reset();
+                Running = true;
+                DateTime start = DateTime.Now;
                 Completion = 0;
                 
                 dboDatabase db = filter.Object.Database;
@@ -49,11 +53,19 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
                         progress.Report(result);
                         cancellationToken.ThrowIfCancellationRequested();
+
+                        ElementProcessedCount++;
+                        FindingCount++;
                         Completion = (int)(count++ / (float)list.Count * 100);
+                        MeasuredExecutionTimePerElement = TimeSpan.FromTicks(DateTime.Now.Subtract(start).Ticks / ElementProcessedCount);
+                        RemainingExecutionTime = TimeSpan.FromMilliseconds(MeasuredExecutionTimePerElement.TotalMilliseconds * (list.Count - count));
                     }
                 }
 
                 Completion = 100;
+                Running = false;
+                Completed = true;
+                MeasuredExecutionTime = DateTime.Now.Subtract(start);
             }, cancellationToken);
         }
     }

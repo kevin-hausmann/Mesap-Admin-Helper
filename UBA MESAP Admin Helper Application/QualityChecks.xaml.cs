@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,8 +16,10 @@ namespace UBA.Mesap.AdminHelper
     /// <summary>
     /// Interaction logic for QualityChecks.xaml
     /// </summary>
-    public partial class QualityChecks : UserControl, IDatabaseChangedObserver
+    public partial class QualityChecks : UserControl, IDatabaseChangedObserver, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private ISet<QualityCheck> AvailableChecks = QualityCheck.FindImplementedChecks();
 
         private const string InventoryID = "Datenprobleme";
@@ -28,6 +31,17 @@ namespace UBA.Mesap.AdminHelper
        
         private CancellationTokenSource qualityCheckSource;
         private CancellationTokenSource estimateDurationSource;
+
+        private bool running = false;
+        public bool Idle
+        {
+            get { return !running; }
+            private set
+            {
+                running = !value;
+                NotifyChange();
+            }
+        }
 
         public QualityChecks()
         {
@@ -50,12 +64,12 @@ namespace UBA.Mesap.AdminHelper
             // Determine active check count and adjust UI
             int activeCount = AvailableChecks.Count(check => check.Enabled);
             _RunQualityChecks.IsEnabled = activeCount > 0;
-            _ExecutionTimeLeft.Visibility = activeCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+            _FilterCountLabel.Visibility = activeCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             // Estimate cumulative check execution time
             if (activeCount > 0)
             {
-                _ExecutionTimeLeft.Content = "Updating...";
+                _FilterCountLabel.Content = "Updating...";
 
                 // First, update the filter information
                 await UpdateFilterAsync();
@@ -63,20 +77,20 @@ namespace UBA.Mesap.AdminHelper
                 // Second, check all active checks and sum up execution times
                 estimateDurationSource?.Dispose();
                 estimateDurationSource = new CancellationTokenSource();
-                Task<int>[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
-                int[] durations = await Task.WhenAll(checksEnabled);
+                Task[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
+                await Task.WhenAll(checksEnabled);
 
                 // Third, update UI
-                _ExecutionTimeLeft.Content = String.Format("{0:g} for {1} time series", TimeSpan.FromMilliseconds(durations.Sum()), filter.Count);
+                _FilterCountLabel.Content = String.Format("{0} time series", filter.Count);
             }
         }
 
         private async void RunQualityChecks(object sender, RoutedEventArgs e)
         {
+            Idle = false;
+
             // Prepare UI
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(false);
-            _StatusFilter.Content = _StatusFindings.Content = _StatusChecks.Content = _StatusTotal.Content = _StatusPerSeries.Content = "";
-            _StatusBar.Visibility = Visibility.Visible;
             _RunQualityChecks.IsEnabled = false;
             _CancelQualityChecks.IsEnabled = true;
             _ResultListView.Items.Clear();
@@ -85,10 +99,8 @@ namespace UBA.Mesap.AdminHelper
             DateTime total = DateTime.Now;
             DateTime task = DateTime.Now;
             await UpdateFilterAsync();
-            _StatusFilter.Content = String.Format("Filter {0}ms", DateTime.Now.Subtract(task).TotalMilliseconds);
             task = DateTime.Now;
             await LoadExistingFindingsAsync();
-            _StatusFindings.Content = String.Format("Existing findings {0}ms", DateTime.Now.Subtract(task).TotalMilliseconds);
             task = DateTime.Now;
 
             // Find quality check to run
@@ -114,13 +126,12 @@ namespace UBA.Mesap.AdminHelper
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).EnableDatabaseSelection(true);
             _RunQualityChecks.IsEnabled = true;
             _CancelQualityChecks.IsEnabled = false;
-            _StatusChecks.Content = String.Format("Checks {0}ms", DateTime.Now.Subtract(task).TotalMilliseconds);
-            _StatusTotal.Content = String.Format("Total {0}ms", DateTime.Now.Subtract(total).TotalMilliseconds);
-            _StatusPerSeries.Content = String.Format("{0}ms for each of {1} serie(s)", ((int) DateTime.Now.Subtract(total).TotalMilliseconds) / filter.Count, filter.Count);
-
+            
             // We cannot reuse the cancel token
             qualityCheckSource.Dispose();
             qualityCheckSource = null;
+
+            Idle = true;
         }
 
         private Action<ISet<Finding>> AddFinding()
@@ -238,6 +249,18 @@ namespace UBA.Mesap.AdminHelper
                         existingFindings.Add(Finding.FromDatabaseEntry(entry));
                 }
             });
+        }
+
+        private readonly Dictionary<string, PropertyChangedEventArgs> _argsCache = new Dictionary<string, PropertyChangedEventArgs>();
+        protected virtual void NotifyChange([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
+        {
+            if (PropertyChanged != null && _argsCache != null && !string.IsNullOrEmpty(memberName))
+            {
+                if (!_argsCache.ContainsKey(memberName))
+                    _argsCache[memberName] = new PropertyChangedEventArgs(memberName);
+
+                PropertyChanged.Invoke(this, _argsCache[memberName]);
+            }
         }
     }
 }

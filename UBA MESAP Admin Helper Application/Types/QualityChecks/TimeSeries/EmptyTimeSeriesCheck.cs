@@ -9,14 +9,14 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         public override string Description => "Identifiziert Zeitreihen, die keinerlei Werte enthalten";
         public override short DatabaseReference => 118;
 
+        public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(75);
+        
         protected override short StartYear => 1900;
         protected override short EndYear => 2100;
         protected override Finding.PriorityEnum DefaultPriority => Finding.PriorityEnum.Low;
 
-        protected override int FindWorkloadOverhead => 0;
         protected override int[,] FindWorkloadFilter => new int[,] {};
-        protected override short EstimateExecutionTime() => 75;
-
+        
         protected override void CheckTimeSeries(TimeSeries series, IProgress<ISet<Finding>> progress)
         {
             // All data we need has already been preloaded for us

@@ -223,7 +223,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 dboEvent.EventItemDatas.let_Value(fieldNr, value);
         }
 
-        public static string GetEnumDescription(Enum value)
+        private static string GetEnumDescription(Enum value)
         {
             FieldInfo field = value.GetType().GetField(value.ToString());
 

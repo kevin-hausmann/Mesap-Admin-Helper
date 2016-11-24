@@ -1,6 +1,7 @@
 ﻿<UserControl xaml:Class="UBA.Mesap.AdminHelper.QualityChecks"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:xaml="http://schemas.microsoft.com/winfx/2006/xaml"
+    Name="QualityCheckTab">
     <UserControl.Resources>
         <BooleanToVisibilityConverter xaml:Key="BooleanToVisibilityConverter"/>
         <Style xaml:Key="ItemContStyle" TargetType="{xaml:Type ListViewItem}">
@@ -12,27 +13,104 @@
         </Style>
     </UserControl.Resources>
     <DockPanel>
-        <StackPanel Name="_StatusBar" DockPanel.Dock="Bottom" Orientation="Horizontal" Visibility="Collapsed">
-            <Label Name="_StatusFilter" Width="200" />
-            <Label Name="_StatusFindings" Width="200" />
-            <Label Name="_StatusChecks" Width="200" />
-            <Label Name="_StatusTotal" Width="200" />
-            <Label Name="_StatusPerSeries" Width="200" />
-        </StackPanel>
         <ItemsControl Name="_QualityCheckList" DockPanel.Dock="Right">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel MaxWidth="250px">
-                        <CheckBox IsChecked="{Binding Enabled}" Click="SelectCheck" Tag="{Binding DatabaseReference}" Margin="5" ToolTip="{Binding Description}">
+                    <StackPanel MaxWidth="300px">
+                        <CheckBox IsEnabled="{Binding Path=Idle, ElementName=QualityCheckTab}" IsChecked="{Binding Enabled}" Click="SelectCheck" Tag="{Binding DatabaseReference}" Margin="5" ToolTip="{Binding Description}">
                             <TextBlock Text="{Binding Name}" />
                         </CheckBox>
-                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="5, 2" Height="5" Visibility="{Binding Enabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <DockPanel Visibility="{Binding Enabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Label DockPanel.Dock="Right" Width="40" Padding="2" Content="{Binding Completion, Mode=OneWay}" ContentStringFormat="{}{0}%" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding Completion, Mode=OneWay}" Margin="5, 2, 0, 2" Height="6" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1" Margin="5,0,0,0" Visibility="{Binding Enabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/datasheet.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding ElementCount, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding EstimatedExecutionTimePerElement, Mode=OneWay, StringFormat={}{0:fff}ms}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding EstimatedExecutionTime, Mode=OneWay, StringFormat=\{0:h\\:mm\\:ss\}}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                            </Grid>
+                        </Border>
+                        <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1" Margin="5,0,0,0" Visibility="{Binding Running, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/datasheet.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding ElementProcessedCount, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/finding.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding FindingCount, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding RemainingExecutionTime, Mode=OneWay, StringFormat=\{0:h\\:mm\\:ss\}}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                            </Grid>
+                        </Border>
+                        <Border Background="GhostWhite" BorderBrush="Gainsboro" BorderThickness="1" Margin="5,0,0,0" Visibility="{Binding Completed, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/finding.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding FindingCount, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding MeasuredExecutionTimePerElement, Mode=OneWay, StringFormat={}{0:fff}ms}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>
+                                <Label Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        <TextBlock Text="{Binding MeasuredExecutionTime, Mode=OneWay, StringFormat=\{0:h\\:mm\\:ss\}}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Label>                                
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-            <Label Name="_FilterCountLabel" Margin="5">
+            <Label Margin="5">
                 Verwenden Sie eine Sicht mit der ID "QualityCheck" um den Filter zu setzen.
             </Label>
             <Button Name="_RunQualityChecks" Margin="5" Click="RunQualityChecks" IsEnabled="False">
@@ -41,14 +119,14 @@
             <Button Name="_CancelQualityChecks" Margin="5" Click="CancelQualityChecks" IsEnabled="False">
                 Alle abbrechen!
             </Button>
-            <Label Name="_ExecutionTimeLeft" Margin="5" Visibility="Collapsed" />
+            <Label Name="_FilterCountLabel" Margin="5" Visibility="Collapsed" />
         </StackPanel>
         <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Datenproblem(e) erzeugen" Click="PushFindings">
                         <MenuItem.Icon>
-                            <Image Source="Images/filter.gif" />
+                            <Image Source="Images/finding.gif" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />

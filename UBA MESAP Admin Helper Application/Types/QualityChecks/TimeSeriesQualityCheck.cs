@@ -1,5 +1,6 @@
 ﻿using M4DBO;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,10 +8,9 @@ using System.Threading.Tasks;
 namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     /// <summary>
-    /// Abstract sub-type of quality check. Use this if your check
-    /// goes through a list of time series and checks some property
-    /// for each of them. For more flexibility, sub-class the QualityCheck
-    /// type itself.
+    /// Abstract sub-type of quality check. Use this if your check goes through
+    /// a list of time series and checks some property for each of them.
+    /// For more flexibility, sub-class the QualityCheck type itself.
     /// </summary>
     public abstract class TimeSeriesQualityCheck : QualityCheck
     {
@@ -30,24 +30,19 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected abstract Finding.PriorityEnum DefaultPriority { get; }
 
         /// <summary>
-        /// Timespan in ms need to triage a time series in FindWorkload().
-        /// This will be used to estimate execution times.
-        /// </summary>
-        protected abstract int FindWorkloadOverhead { get; }
-
-        /// <summary>
         /// Filter definition for the task, CheckTimeSeries() will be called
         /// for matching series only. Format:
         /// [[dimension1, descriptor1, ..., descriptorX], [dimension1, descriptor1, ..., descriptorX], ...]
         /// Matching series have one or more descriptors set for each dimension listed.
-        /// Use -1 as wildcard, an empty filter matches all series.
+        /// Use 0 as wildcard, an empty filter matches all series.
         /// </summary>
         protected abstract int[,] FindWorkloadFilter { get; }
         protected enum DimensionEnum
         {
             Type = 1,
             Area = 2,
-            Pollutant = 4
+            Pollutant = 4,
+            Category = 13
         }
         protected enum DescriptorEnum
         {
@@ -61,13 +56,12 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             TSP = 3031,
         }
 
-        public sealed override Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
+        public sealed override Task EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                return FindWorkloadOverhead > 0 ?
-                    filter.Count * FindWorkloadOverhead + FindWorkload(filter, false).Count * EstimateExecutionTime() :
-                    filter.Count * EstimateExecutionTime();
+                ElementCount = FindWorkload(filter).Count;
+                EstimatedExecutionTime = TimeSpan.FromMilliseconds(ElementCount * EstimatedExecutionTimePerElement.TotalMilliseconds);
             }, cancellationToken);
         }
 
@@ -75,13 +69,18 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         {
             return Task.Run(() =>
             {
-                Completion = 0;
-                ISet<int> workload = FindWorkload(filter, true);
-                Completion = 50;
+                Reset();
+                Running = true;
+                RemainingExecutionTime = EstimatedExecutionTime;
+                DateTime start = DateTime.Now;
+
+                ISet<int> workload = FindWorkload(filter);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 int total = workload.Count;
                 int count = 0;
 
+                DateTime startSeries = DateTime.Now;
                 foreach (int seriesId in workload)
                 {
                     if (StartYear >= 0 && StartYear <= EndYear)
@@ -90,8 +89,16 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                         CheckTimeSeries(new TimeSeries(MesapAPIHelper.GetTimeSeries(seriesId)), progress);
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    Completion = 50 + (int)(++count / (float)total * 100) / 2;
+                    ElementProcessedCount++;
+                    Completion = (int)(++count / (float)total * 100);
+                    MeasuredExecutionTimePerElement = TimeSpan.FromTicks(DateTime.Now.Subtract(startSeries).Ticks / ElementProcessedCount);
+                    RemainingExecutionTime = TimeSpan.FromMilliseconds(MeasuredExecutionTimePerElement.TotalMilliseconds * (total - count));
                 }
+
+                Completion = 100;
+                Running = false;
+                Completed = true;
+                MeasuredExecutionTime = DateTime.Now.Subtract(start);
             }, cancellationToken);
         }
 
@@ -105,7 +112,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         /// <summary>
         /// Convenience to report a finding with common values. Uses the checks DefaultPriority and
-        /// will read contact and category from time series object given.
+        /// will read contact and category from time series object given. Advances FindingCount.
         /// </summary>
         /// <param name="progress">Progress handle to report to</param>
         /// <param name="series">Time series checked</param>
@@ -118,47 +125,114 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 title, description, CategoriesForTimeSeries(series), ContactsForTimeSeries(series), DefaultPriority));
 
             progress.Report(result);
+            FindingCount++;
         }
 
-        private ISet<int> FindWorkload(Filter filter, bool updateCompletion)
+        /// <summary>
+        /// Find source category information for given time series.
+        /// Assumes the series' related key have already been read.
+        /// </summary>
+        /// <param name="series">The time series to inspect.</param>
+        /// <returns>A number of category objects (likely 1) or an empyt set,
+        /// if no descriptor is set. Never null.</returns>
+        protected ISet<Finding.Category> CategoriesForTimeSeries(TimeSeries series)
         {
-            ISet<int> result = new HashSet<int>();
-            dboList list = TSNrListFromFilter(filter);
-            int count = 0;
+            HashSet<Finding.Category> result = new HashSet<Finding.Category>();
 
-            foreach (int number in list)
-            {
-                if (FindWorkloadFilter.Length == 0 || MatchesWorkloadFilter(number))
-                    result.Add(number);
-
-                if (updateCompletion)
-                    Completion = (int)(++count / (float)list.Count * 100) / 2;
-            }
+            foreach (dboTSKey key in series.Object.TSKeys)
+                if (key.DimNr == (int)DimensionEnum.Category)
+                {
+                    dboTreeObject descriptor = series.Object.Database.TreeObjects[key.ObjNr];
+                    if (descriptor != null)
+                        result.Add(new Finding.Category(descriptor.Name, descriptor.ObjNr));
+                }
 
             return result;
         }
 
-        private bool MatchesWorkloadFilter(int number)
+        protected ISet<Finding.ContactEnum> ContactsForTimeSeries(TimeSeries series)
         {
-            dboTS timeSeries = MesapAPIHelper.GetTimeSeries(number);
-            timeSeries.DbReadRelatedKeys();
-            dboTSKeys keys = timeSeries.TSKeys;
+            HashSet<Finding.ContactEnum> result = new HashSet<Finding.ContactEnum>();
+
+            // Get documentation for this time series
+            dboAnnexObjects objects = series.Object.Database.CreateObject_AnnexObjects();
+            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, series.Object.TsNr);
+            dboAnnexObject annexObject = objects.GetObject_Docu(series.Object.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
+
+            if (annexObject != null)
+            {
+                // Get all documentation components for the time series
+                dboAnnexSetLinks links = series.Object.Database.CreateObject_AnnexSetLinks();
+                links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu);
+
+                // Find contact information
+                foreach (dboAnnexSetLink link in links)
+                    if (link.ComponentNr == 12)
+                    {
+                        dboAnnexItemDatas datas = series.Object.Database.CreateObject_AnnexItemDatas();
+                        datas.DbReadByItemNr(link.AnnexSetNr, 12, 63, false, 0);
+
+                        IEnumerator dataEnum = datas.GetEnumerator();
+                        if (dataEnum.MoveNext())
+                            result.Add(FindContactForAnnexItemPoolReference((dataEnum.Current as dboAnnexItemData).ReferenceData));
+                    }
+            }
+
+            if (result.Count == 0)
+                result.Add(Finding.ContactEnum.NN);
+
+            return result;
+        }
+
+        private Finding.ContactEnum FindContactForAnnexItemPoolReference(int referenceData)
+        {
+            switch (referenceData)
+            {
+                case 154: return Finding.ContactEnum.Schiller;
+                case 155: return Finding.ContactEnum.Rimkus;
+                case 232: return Finding.ContactEnum.Boettcher;
+                case 270: return Finding.ContactEnum.Kludt;
+                case 278: return Finding.ContactEnum.Kotzulla;
+                case 294: return Finding.ContactEnum.Juhrich;
+                case 508: return Finding.ContactEnum.Kuntze;
+                case 556: return Finding.ContactEnum.Hausmann;
+                case 624: return Finding.ContactEnum.Doering;
+                case 743: return Finding.ContactEnum.Reichel;
+                default: return Finding.ContactEnum.NN;
+            }
+        }
+
+        private ISet<int> FindWorkload(Filter filter)
+        {
+            ISet<int> result = new HashSet<int>();
+
+            // Create new filter on the fly and let Mesap do all the work
+            dboTSFilter workload = filter.Object.Database.CreateObject_TSFilter();
+            workload.FilterUsage = mspFilterUsageEnum.mspFilterUsageFilterAndList;
+            workload.TsList = filter.Object.GetTSNumbers();
 
             for (int i = 0; i < FindWorkloadFilter.GetLength(0); i++)
             {
-                dboCollection descriptors = keys.GetCollection(0, FindWorkloadFilter[i, 0]);
+                dboTreeObjectFilter descriptorFilter = filter.Object.Database.CreateObject_TreeObjectFilter();
+                descriptorFilter.DimNr = FindWorkloadFilter[i, 0];
 
-                bool found = false;
                 for (int j = 1; j < FindWorkloadFilter.GetLength(1); j++)
-                    foreach (dboTSKey key in descriptors)
-                        if (key.ObjNr == FindWorkloadFilter[i, j])
-                            found = true;
-                
-                if (!found)
-                    return false;
-            }               
+                    if (FindWorkloadFilter[i, j] > 0)
+                        descriptorFilter.Numbers = (j == 1 ? FindWorkloadFilter[i, j].ToString() :
+                            descriptorFilter.Numbers + "," + FindWorkloadFilter[i, j]);
 
-            return true;
+                Console.WriteLine(descriptorFilter.Numbers);
+
+                workload.Add(descriptorFilter);
+            }
+
+            // Use new filter to find all the time series we need to process
+            dboList list = new dboList();
+            list.FromString(workload.GetTSNumbers(), VBA.VbVarType.vbLong);
+            foreach (int number in list)
+                result.Add(number);
+            
+            return result;
         }
     }
 }

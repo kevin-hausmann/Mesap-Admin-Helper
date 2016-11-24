@@ -231,6 +231,7 @@
     <Compile Include="Types\Database.cs" />
     <Compile Include="Types\DataValue.cs" />
     <Compile Include="Types\Filter.cs" />
+    <Compile Include="Types\QualityChecks\Check.cs" />
     <Compile Include="Types\QualityChecks\Finding.cs" />
     <Compile Include="Types\QualityChecks\QualityCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\EmptyTimeSeriesCheck.cs" />
@@ -386,6 +387,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\datasheet.gif" />
     <Resource Include="Images\delete.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -395,9 +397,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\sort.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\datasheet.gif" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\filter.gif" />
@@ -413,6 +412,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Resource Include="Images\finding.gif" />
+    <Resource Include="Images\time.gif" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

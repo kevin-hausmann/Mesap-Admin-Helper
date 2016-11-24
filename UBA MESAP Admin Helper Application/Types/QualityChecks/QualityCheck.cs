@@ -1,8 +1,5 @@
-﻿using M4DBO;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -11,54 +8,115 @@ using System.Threading.Tasks;
 namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     /// <summary>
-    /// Quality check base class, defines all the interesting methods.
+    /// Quality check base class, defines methods to run tasks.
     /// </summary>
-    public abstract class QualityCheck : IEquatable<QualityCheck>, IComparable<QualityCheck>, INotifyPropertyChanged
+    public abstract class QualityCheck : Check, IEquatable<QualityCheck>, IComparable<QualityCheck>
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public abstract string Name { get; }
 
         public abstract string Description { get; }
 
-        public abstract short DatabaseReference { get; }
+        public abstract short DatabaseReference { get; }       
 
-        private bool enabled = false;
-        public bool Enabled
-        {
-            get { return enabled; }
-            set
+        private int elementCount = 0;
+        /// <summary>
+        /// The number of database elements (e.g. time series) whose quality will be checked.
+        /// </summary>
+        public int ElementCount {
+            get { return elementCount; }
+            protected set
             {
-                enabled = value;
+                elementCount = value;
                 NotifyChange();
             }
         }
 
-        private int percentage = 0;
-        public int Completion
+        private int elementProcessedCount = 0;
+        /// <summary>
+        /// The number of database elements (e.g. time series) whose quality has already
+        /// been checked during the current run.
+        /// </summary>
+        public int ElementProcessedCount
         {
-            get { return percentage; }
+            get { return elementProcessedCount; }
             protected set
             {
-                percentage = value;
+                elementProcessedCount = value;
+                NotifyChange();
+            }
+        }
+
+        private TimeSpan estimatedExecutionTime = TimeSpan.Zero;
+        /// <summary>
+        /// Expected run time based on the filter set.
+        /// Will not be updated when the check runs.
+        /// </summary>
+        public TimeSpan EstimatedExecutionTime
+        {
+            get { return estimatedExecutionTime; }
+            protected set
+            {
+                estimatedExecutionTime = value;
+                NotifyChange();
+            }
+        }
+
+        private TimeSpan remainingExecutionTime = TimeSpan.Zero;
+        /// <summary>
+        /// Expected remaining run time during execution, based on measured performance.
+        /// </summary>
+        public TimeSpan RemainingExecutionTime
+        {
+            get { return remainingExecutionTime; }
+            protected set
+            {
+                remainingExecutionTime = value;
+                NotifyChange();
+            }
+        }
+
+        private TimeSpan measuredExecutionTime = TimeSpan.Zero;
+        /// <summary>
+        /// Total check execution time, available once the check run.
+        /// </summary>
+        public TimeSpan MeasuredExecutionTime
+        {
+            get { return measuredExecutionTime; }
+            protected set
+            {
+                measuredExecutionTime = value;
+                NotifyChange();
+            }
+        }
+
+        /// <summary>
+        /// Estimated average check running time for a single element.
+        /// </summary>
+        public abstract TimeSpan EstimatedExecutionTimePerElement { get; }
+
+        private TimeSpan measuredExecutionTimePerElement = TimeSpan.Zero;
+        /// <summary>
+        /// Measured average check running time for a single element.
+        /// </summary>
+        public TimeSpan MeasuredExecutionTimePerElement
+        {
+            get { return measuredExecutionTimePerElement; }
+            protected set
+            {
+                measuredExecutionTimePerElement = value;
                 NotifyChange();
             }
         }
 
         /// <summary>
         /// Asynchronously estimate check running time for the set of time series given by a filter.
+        /// Updates the corresponding fields ElementCount and EstimatedExecutionTime.
         /// </summary>
-        /// <param name="filter">The filter used to select a sub-set of time series from the database</param>
+        /// <param name="filter">The filter used to select a sub-set of elements from the database</param>
         /// <param name="token">Token to cancel the async operation</param>
-        /// <returns>Task to determine estimated check running time in milli-seconds</returns>
-        public abstract Task<int> EstimateExecutionTimeAsync(Filter filter, CancellationToken token);
-
-        /// <summary>
-        /// Estimate average check running time for a single time series.
-        /// </summary>
-        /// <returns>Average execution time for a single time series in milli-seconds.</returns>
-        protected abstract short EstimateExecutionTime();
-
+        /// <returns>Task instance that runs the estimation</returns>
+        public abstract Task EstimateExecutionTimeAsync(Filter filter, CancellationToken token);
+        
         /// <summary>
         /// Asynchronously execute check on all time series given by filter. Findings will
         /// be reported using the progress handle provided. When called, the set send via
@@ -94,7 +152,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 return false;
             }
 
-            return Equals(obj as Finding);
+            return Equals(obj as QualityCheck);
         }
 
         public override int GetHashCode()
@@ -107,87 +165,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             return Name.CompareTo(other.Name);
         }
 
-        protected dboList TSNrListFromFilter(Filter filter)
+        protected override void Reset()
         {
-            dboList result = new dboList();
-            result.FromString(filter.Object.GetTSNumbers(), VBA.VbVarType.vbLong);
+            base.Reset();
 
-            return result;
-        }
-
-        /// <summary>
-        /// Find source category information for given time series.
-        /// Assumes the series' related key have already been read.
-        /// </summary>
-        /// <param name="series">The time series to inspect.</param>
-        /// <returns>A number of category objects (likely 1) or an empyt set,
-        /// if no descriptor is set. Never null.</returns>
-        protected ISet<Finding.Category> CategoriesForTimeSeries(TimeSeries series)
-        {
-            HashSet<Finding.Category> result = new HashSet<Finding.Category>();
-            const int CategoryDimensionNumber = 13;
-
-            foreach (dboTSKey key in series.Object.TSKeys)
-                if (key.DimNr == CategoryDimensionNumber)
-                {
-                    dboTreeObject descriptor = series.Object.Database.TreeObjects[key.ObjNr];
-                    if (descriptor != null)
-                        result.Add(new Finding.Category(descriptor.Name, descriptor.ObjNr));
-                }
-
-            return result;
-        }
-
-        protected ISet<Finding.ContactEnum> ContactsForTimeSeries(TimeSeries series)
-        {
-            HashSet<Finding.ContactEnum> result = new HashSet<Finding.ContactEnum>();
-            
-            // Get documentation for this time series
-            dboAnnexObjects objects = series.Object.Database.CreateObject_AnnexObjects();
-            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, series.Object.TsNr);
-            dboAnnexObject annexObject = objects.GetObject_Docu(series.Object.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
-
-            if (annexObject != null)
-            {
-                // Get all documentation components for the time series
-                dboAnnexSetLinks links = series.Object.Database.CreateObject_AnnexSetLinks();
-                links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu);
-
-                // Find contact information
-                foreach (dboAnnexSetLink link in links)
-                    if (link.ComponentNr == 12)
-                    {
-                        dboAnnexItemDatas datas = series.Object.Database.CreateObject_AnnexItemDatas();
-                        datas.DbReadByItemNr(link.AnnexSetNr, 12, 63, false, 0);
-
-                        IEnumerator dataEnum = datas.GetEnumerator();
-                        if (dataEnum.MoveNext())
-                            result.Add(FindEnumValueForAnnexItemPoolReference((dataEnum.Current as dboAnnexItemData).ReferenceData));
-                    }
-            }
-
-            if (result.Count == 0)
-                result.Add(Finding.ContactEnum.NN);
-            
-            return result;
-        }
-
-        private Finding.ContactEnum FindEnumValueForAnnexItemPoolReference(int referenceData)
-        {
-            switch (referenceData)
-            {
-                case 154: return Finding.ContactEnum.Schiller;
-                case 155: return Finding.ContactEnum.Rimkus;
-                case 232: return Finding.ContactEnum.Boettcher;
-                case 270: return Finding.ContactEnum.Kludt; 
-                case 278: return Finding.ContactEnum.Kotzulla;
-                case 294: return Finding.ContactEnum.Juhrich;
-                case 508: return Finding.ContactEnum.Kuntze;
-                case 556: return Finding.ContactEnum.Hausmann;
-                case 624: return Finding.ContactEnum.Doering;
-                case 743: return Finding.ContactEnum.Reichel;
-                default: return Finding.ContactEnum.NN;
-            }
+            ElementProcessedCount = 0;
         }
 
         public static QualityCheck ForDatabaseReference(int id)
@@ -216,18 +198,6 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             }
 
             return new SortedSet<QualityCheck>(implementedChecks);
-        }
-
-        private readonly Dictionary<string, PropertyChangedEventArgs> _argsCache = new Dictionary<string, PropertyChangedEventArgs>();
-        protected virtual void NotifyChange([System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
-        {
-            if (PropertyChanged != null && _argsCache != null && !string.IsNullOrEmpty(memberName))
-            {
-                if (!_argsCache.ContainsKey(memberName))
-                    _argsCache[memberName] = new PropertyChangedEventArgs(memberName);
-
-                PropertyChanged.Invoke(this, _argsCache[memberName]);
-            }
-        }
+        }        
     }
 }
