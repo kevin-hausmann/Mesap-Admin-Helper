@@ -54,6 +54,9 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             NBL = 1002,
             Germany = 1003,
             TSP = 3031,
+            PM10 = 50471,
+            PM2_5 = 50470,
+            BC = 52926
         }
 
         public sealed override Task EstimateExecutionTimeAsync(Filter filter, CancellationToken cancellationToken)
@@ -220,8 +223,6 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     if (FindWorkloadFilter[i, j] > 0)
                         descriptorFilter.Numbers = (j == 1 ? FindWorkloadFilter[i, j].ToString() :
                             descriptorFilter.Numbers + "," + FindWorkloadFilter[i, j]);
-
-                Console.WriteLine(descriptorFilter.Numbers);
 
                 workload.Add(descriptorFilter);
             }

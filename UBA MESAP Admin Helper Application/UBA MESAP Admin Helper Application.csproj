@@ -235,13 +235,13 @@
     <Compile Include="Types\QualityChecks\Finding.cs" />
     <Compile Include="Types\QualityChecks\QualityCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\EmptyTimeSeriesCheck.cs" />
-    <Compile Include="Types\QualityChecks\TimeSeries\ActitivityDataCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\ActivityData\ActitivityDataCheck.cs" />
     <Compile Include="Types\QualityChecks\Extra\DoNothingCheck.cs" />
-    <Compile Include="Types\QualityChecks\TimeSeries\InterpolationCheck.cs" />
-    <Compile Include="Types\QualityChecks\TimeSeries\MissingEmissionFactorCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\Properties\InterpolationCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\EmissionFactors\MissingEmissionFactorCheck.cs" />
     <Compile Include="Types\QualityChecks\Extra\ListExistingFindings.cs" />
-    <Compile Include="Types\QualityChecks\TimeSeriesQualityCheck.cs" />
-    <Compile Include="Types\QualityChecks\TimeSeries\TSPEmissionFactorCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\TimeSeriesQualityCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\EmissionFactors\TSPEmissionFactorCheck.cs" />
     <Compile Include="Types\Tab.cs">
     </Compile>
     <Compile Include="Types\TimeSeries.cs" />
