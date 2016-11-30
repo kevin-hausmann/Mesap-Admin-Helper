@@ -10,7 +10,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         public override string Description => "Vergleicht passende Emissionsfaktoren für Stäube und stellt sicher, dass die Fraktionen nicht zu groß sind.";
         public override short DatabaseReference => 114;
 
-        public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(550);
+        public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(4000);
         
         protected override short StartYear => 1990;
         protected override short EndYear => 2020;
@@ -74,7 +74,8 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 return new TimeSeries(MesapAPIHelper.GetTimeSeries(Int32.Parse(list.ToString())), StartYear, EndYear);
             else
             {
-                Console.WriteLine("Found {0} series as siblings of {1}", list.Count, series.Legend);
+                Console.WriteLine("Found {0} series as siblings of {1}, replacing {2} with {3}",
+                    list.Count, series.Legend, Enum.GetName(typeof(DimensionEnum), dimNr), Enum.GetName(typeof(DescriptorEnum), descriptor));
                 return null;
             }
         }

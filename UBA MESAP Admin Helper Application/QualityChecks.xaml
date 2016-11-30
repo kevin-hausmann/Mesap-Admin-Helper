@@ -40,7 +40,7 @@
                                 <Label Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                        <TextBlock Text="{Binding EstimatedExecutionTimePerElement, Mode=OneWay, StringFormat={}{0:fff}ms}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding EstimatedExecutionTimePerElement.TotalMilliseconds, Mode=OneWay, StringFormat={}{0:f0}ms}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Label>
                                 <Label Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
@@ -94,7 +94,7 @@
                                 <Label Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="Images/time.gif" Margin="2" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                        <TextBlock Text="{Binding MeasuredExecutionTimePerElement, Mode=OneWay, StringFormat={}{0:fff}ms}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding MeasuredExecutionTimePerElement.TotalMilliseconds, Mode=OneWay, StringFormat={}{0:f0}ms}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Label>
                                 <Label Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0">
