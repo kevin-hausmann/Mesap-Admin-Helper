@@ -44,6 +44,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     dboEventInventory inventory = db.EventInventories[InventoryID];
                     dboEvents list = inventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
                     list.DbReadAll();
+                    ElementCount = list.Count;
 
                     int count = 0;
                     foreach (dboEvent entry in list)

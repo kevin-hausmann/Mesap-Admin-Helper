@@ -247,12 +247,9 @@ namespace UBA.Mesap.AdminHelper.Types
         public DataValue RetrieveData(int year)
         {
             int period = _timeSeries.Database.Units.TkDateToPeriod(new DateTime(year, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
+            dboTSData data = _timeSeries.TSDatas.GetObject(period, mspTimeKeyEnum.mspTimeKeyYear, mspDataTypeEnum.mspDataTypeInput, 1);
 
-            foreach (dboTSData data in _timeSeries.TSDatas)
-                if (data.Value != null && data.PeriodNr == period)
-                    return new DataValue(data);
-
-            return null;
+            return data == null ? null : new DataValue(data);
         }
 
         protected dboAnnexItemData ExtractUncertaintyInformation(UncertaintyComponent field)

@@ -16,7 +16,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
     {
         /// <summary>
         /// The first year (e.g. 1990) data points will be loaded for. Give any
-        /// value less than 0 to prevent any data from being pre-loaded.
+        /// value less than 0 to prevent any data from being preloaded.
         /// </summary>
         protected abstract short StartYear { get; }
         /// <summary>
@@ -34,7 +34,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         /// for matching series only. Format:
         /// [[dimension1, descriptor1, ..., descriptorX], [dimension1, descriptor1, ..., descriptorX], ...]
         /// Matching series have one or more descriptors set for each dimension listed.
-        /// Use 0 as wildcard, an empty filter matches all series.
+        /// Use 0 as wild card, an empty filter matches all series.
         /// </summary>
         protected abstract int[,] FindWorkloadFilter { get; }
         protected enum DimensionEnum
@@ -78,6 +78,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                 DateTime start = DateTime.Now;
 
                 ISet<int> workload = FindWorkload(filter);
+                ElementCount = workload.Count;
                 cancellationToken.ThrowIfCancellationRequested();
 
                 int total = workload.Count;
@@ -136,7 +137,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         /// Assumes the series' related key have already been read.
         /// </summary>
         /// <param name="series">The time series to inspect.</param>
-        /// <returns>A number of category objects (likely 1) or an empyt set,
+        /// <returns>A number of category objects (likely 1) or an empty set,
         /// if no descriptor is set. Never null.</returns>
         protected ISet<Finding.Category> CategoriesForTimeSeries(TimeSeries series)
         {
