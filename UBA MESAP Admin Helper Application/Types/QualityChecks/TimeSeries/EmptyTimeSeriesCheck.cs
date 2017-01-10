@@ -21,7 +21,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         {
             // All data we need has already been preloaded for us
             if (series.Object.TSDatas.Count == 0)
-                Report(progress, series,
+                Report(progress, new TimeSeries[] { series },
                     String.Format("Zeitreihe {0} ist leer", series.ID),
                     String.Format("Diese Zeitreihe enthält keinerlei Werte [{0}]", series.Legend));
         }

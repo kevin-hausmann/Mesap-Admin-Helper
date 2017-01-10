@@ -1,16 +1,18 @@
-﻿using System;
-using M4DBO;
+﻿using M4DBO;
+using System;
 using System.Collections;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
     /// <summary>
-    /// Base class for time series, wrapping dboTS
+    /// Base class for time series, wrapping dboTS.
     /// </summary>
     public class TimeSeries
     {
-        // The base API object wrapped
-        protected dboTS _timeSeries;
+        /// <summary>
+        /// The base API object wrapped.
+        /// </summary>
+        public dboTS Object { get; protected set; }
 
         // Distribution options and their value representation in the MESAP database
         public enum Distribution : int
@@ -43,8 +45,8 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <param name="series">The series to wrap</param>
         public TimeSeries(dboTS series)
         {
-            _timeSeries = series;
-            _timeSeries.DbReadRelatedKeys();
+            Object = series;
+            Object.DbReadRelatedKeys();
         }
 
         /// <summary>
@@ -61,38 +63,21 @@ namespace UBA.Mesap.AdminHelper.Types
         }
 
         /// <summary>
-        /// Get the API object wrapped
-        /// </summary>
-        public dboTS Object
-        {
-            get { return _timeSeries; }
-        }
-
-        /// <summary>
         /// Get the name of wrapped series
         /// </summary>
-        public string Name
-        {
-            get { return _timeSeries.Name; }
-        }
+        public string Name => Object.Name;
 
         /// <summary>
         /// Get the ID of wrapped series
         /// </summary>
-        public string ID
-        {
-            get { return _timeSeries.ID; }
-        }
+        public string ID => Object.ID;
 
         /// <summary>
         /// Get the legend of wrapped series 
         /// (only existing descriptor's ids sorted alphabetically)
         /// </summary>
-        public string Legend
-        {
-            get { return _timeSeries.BuildTsLegend(false, mspNameModeEnum.mspNameModeId, mspSortModeEnum.mspSortModeAlpha); }
-        }
-
+        public string Legend => Object.BuildTsLegend(false, mspNameModeEnum.mspNameModeId, mspSortModeEnum.mspSortModeAlpha);
+    
         /// <summary>
         /// Get the uncertainty distribution for this time series.
         /// </summary>
@@ -155,8 +140,8 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>The current flag status</returns>
         public bool IsMarkedConsistent()
         {
-            _timeSeries.DbReadRelatedProperties(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
-            return _timeSeries.TSProperties.GetObject(
+            Object.DbReadRelatedProperties(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
+            return Object.TSProperties.GetObject(
                      mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown).IsTsOk;
         }
 
@@ -206,17 +191,10 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <param name="clear">Whether priorly read values should be erased</param>
         protected void ReadData(int yearFrom, int yearTo, bool clear)
         {
-            int from = _timeSeries.Database.Units.TkDateToPeriod(new DateTime(yearFrom, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
-            int to = _timeSeries.Database.Units.TkDateToPeriod(new DateTime(yearTo, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
+            int from = Object.Database.Units.TkDateToPeriod(new DateTime(yearFrom, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
+            int to = Object.Database.Units.TkDateToPeriod(new DateTime(yearTo, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
 
-            _timeSeries.DbReadRelatedDatas(clear, mspDataTypeEnum.mspDataTypeInput,
-                mspTimeKeyEnum.mspTimeKeyYear, from, to, null, "1", null);
-            _timeSeries.DbReadRelatedDatas(false, mspDataTypeEnum.mspDataTypeInput,
-                mspTimeKeyEnum.mspTimeKeyYear, from, to, null, "2", null);
-            _timeSeries.DbReadRelatedDatas(false, mspDataTypeEnum.mspDataTypeResult,
-                mspTimeKeyEnum.mspTimeKeyYear, from, to, null, "1", null);
-            _timeSeries.DbReadRelatedDatas(false, mspDataTypeEnum.mspDataTypeResult,
-                mspTimeKeyEnum.mspTimeKeyYear, from, to, null, "2", null);
+            Object.DbReadRelatedDatas(clear, mspDataTypeEnum.mspDataTypeInput, mspTimeKeyEnum.mspTimeKeyYear, from, to);
         }
 
         /// <summary>
@@ -246,8 +224,8 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>Data object, may be null</returns>
         public DataValue RetrieveData(int year)
         {
-            int period = _timeSeries.Database.Units.TkDateToPeriod(new DateTime(year, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
-            dboTSData data = _timeSeries.TSDatas.GetObject(period, mspTimeKeyEnum.mspTimeKeyYear, mspDataTypeEnum.mspDataTypeInput, 1);
+            int period = Object.Database.Units.TkDateToPeriod(new DateTime(year, 1, 1), mspTimeKeyEnum.mspTimeKeyYear, false);
+            dboTSData data = Object.TSDatas.GetObject(period, mspTimeKeyEnum.mspTimeKeyYear, mspDataTypeEnum.mspDataTypeInput, 1);
 
             return data == null ? null : new DataValue(data);
         }
@@ -258,15 +236,15 @@ namespace UBA.Mesap.AdminHelper.Types
             dboAnnexItemData result = null;
 
             // Get documentation for this time series
-            dboAnnexObjects objects = _timeSeries.Database.CreateObject_AnnexObjects("");
-            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, _timeSeries.TsNr, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0, false);
-            dboAnnexObject annexObject = objects.GetObject_Docu(_timeSeries.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
+            dboAnnexObjects objects = Object.Database.CreateObject_AnnexObjects("");
+            objects.DbReadByReference_Docu(mspDocuTypeEnum.mspDocuTypeTS, Object.TsNr, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0, false);
+            dboAnnexObject annexObject = objects.GetObject_Docu(Object.TsNr, mspDocuTypeEnum.mspDocuTypeTS, mspTimeKeyEnum.mspTimeKeyYear, 0, 0, 0);
 
             // No documentation -> return "null"
             if (annexObject == null) return null;
 
             // Get all documentation components for the time series
-            dboAnnexSetLinks links = _timeSeries.Database.CreateObject_AnnexSetLinks("");
+            dboAnnexSetLinks links = Object.Database.CreateObject_AnnexSetLinks("");
             links.DbReadByReference(annexObject.AnnexObjNr, mspAnnexTypeEnum.mspAnnexTypeDocu, true);
             
             // ... and search them for uncertainties
@@ -278,7 +256,7 @@ namespace UBA.Mesap.AdminHelper.Types
                 if (link.ComponentNr == (int)UncertaintyComponent.self)
                 {
                     // Extract component data
-                    dboAnnexItemDatas datas = _timeSeries.Database.CreateObject_AnnexItemDatas("");
+                    dboAnnexItemDatas datas = Object.Database.CreateObject_AnnexItemDatas("");
                     datas.DbReadByItemNr(link.AnnexSetNr, (int)UncertaintyComponent.self, (int)field, false, link.AnnexSetLinkNr, true);
 
                     // Set first item (there should only be one) as return value

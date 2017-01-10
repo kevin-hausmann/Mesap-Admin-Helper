@@ -130,7 +130,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         /// <summary>
         /// Determine whether to findings should be considered equal. The default implementation checks the
-        /// findings titles. Subclass can overwrite this behaviour.
+        /// findings titles. Subclass can overwrite this behavior.
         /// </summary>
         /// <param name="existingFinding">Finding already present</param>
         /// <param name="newFinding">New finding</param>

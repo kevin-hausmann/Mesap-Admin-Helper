@@ -15,17 +15,28 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
     /// </summary>
     public class Finding : IExportable
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public int TimeSeriesNumber { get; set; }
+        public string Title { get; protected set; }
+        public string Description { get; protected set; }
+        
+        /// <summary>
+        /// IDs of the time series' checked and effected by this finding.
+        /// </summary>
+        public int[] TimeSeries { get; protected set; }
+        public string TimeSeriesLabel => String.Join(",", TimeSeries);
 
-        public QualityCheck Check { get; set; }
+        /// <summary>
+        /// Check that made this finding
+        /// </summary>
+        public QualityCheck Check { get; protected set; }
+        /// <summary>
+        /// Whether or not this finding is already present in the Mesap database.
+        /// </summary>
         public bool Exists { get; set; }
 
-        public PriorityEnum Priority { get; set; }
+        public PriorityEnum Priority { get; protected set; }
         public string PriorityLabel => GetEnumDescription(Priority);
 
-        private ISet<ContactEnum> contacts = new HashSet<ContactEnum>();
+        protected ISet<ContactEnum> contacts = new HashSet<ContactEnum>();
         public string ContactLabel => String.Join("|", contacts.Select(contact => GetEnumDescription(contact)));
 
         public class Category
@@ -40,7 +51,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             public int Id { get; }
         }
 
-        private ISet<Category> categories = new HashSet<Category>();
+        protected ISet<Category> categories = new HashSet<Category>();
         public string CategoryLabel => String.Join("|", categories.Select(category => category.Name));
 
         public enum StatusEnum { New = 106, Done = 107, NoChange = 116 }
@@ -81,13 +92,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         // private const int createDateItemNr = 84;
         private const int originItemNr = 92;
 
-        public Finding() { }
+        private Finding() { }
 
-        public Finding(QualityCheck check, int tsNumber, string title, string description,
+        public Finding(QualityCheck check, int[] tsNumbers, string title, string description,
             ISet<Category> categories, ISet<ContactEnum> contacts, PriorityEnum prio) : this()
         {
             this.Check = check;
-            this.TimeSeriesNumber = tsNumber;
+            this.TimeSeries = tsNumbers;
             this.Title = title;
             this.Description = description;
             this.categories = categories;
@@ -102,7 +113,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             StringBuilder buffer = new StringBuilder();
 
             buffer.Append(Check.Name + "\t");
-            buffer.Append(TimeSeriesNumber + "\t");
+            buffer.Append(TimeSeriesLabel + "\t");
             buffer.Append(Title + "\t");
             buffer.Append(Description + "\t");
             buffer.Append(CategoryLabel + "\t");
@@ -114,6 +125,11 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         #endregion
 
+        /// <summary>
+        /// Marshal finding instance from an existing Mesap database event record.
+        /// </summary>
+        /// <param name="dboEvent">Database record to read data from.</param>
+        /// <returns>The object with its fields set accordingly.</returns>
         public static Finding FromDatabaseEntry(dboEvent dboEvent)
         {
             Finding finding = new Finding();
@@ -142,6 +158,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             return finding;
         }
 
+        /// <summary>
+        /// Save given finding's field information to an actual Mesap database record. Will make
+        /// sure to only change the database if all information is given.
+        /// </summary>
+        /// <param name="dboEvent">Database object to save to. Needs to be writable.</param>
+        /// <param name="finding">Finding to persist. Is checked for required data being set.</param>
+        /// <exception cref="Exception">If any of the conditions for this method to execute is not met.</exception>
         public static void ToDatabaseEntry(dboEvent dboEvent, Finding finding)
         {
             if (dboEvent.IsWriteProtected || !dboEvent.IsModifyEnabled)

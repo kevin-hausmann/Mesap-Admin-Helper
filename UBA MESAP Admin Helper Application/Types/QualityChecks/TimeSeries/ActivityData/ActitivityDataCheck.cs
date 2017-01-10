@@ -28,7 +28,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             DataValue previousValue = series.RetrieveData(StartYear);
             
             if (currentValue == null && previousValue != null)
-                Report(progress, series, 
+                Report(progress, new TimeSeries[] { series }, 
                     String.Format("AR in ZR \"{0}\" ohne Wert für {1}", series.ID, EndYear),
                     String.Format("Diese Aktivitätsrate hat keinen Wert für {0}, aber für das Vorjahr! [{1}]", EndYear, series.Legend));
         }

@@ -91,7 +91,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     if (upperValueObject != null && seriesValueObject != null &&
                         // Rounding needed to avoid number conversion artifacts
                         Math.Round(upperValueObject.Object.Value - seriesValueObject.Object.Value, Precision) < 0)
-                            Report(progress, series,
+                            Report(progress, new TimeSeries[] { series, upper },
                             String.Format("Staubfraktionen {0} problematisch!", year),
                             String.Format("Wert in Zeitreihe [{1}] größer als in Zeitreihe [{2}] ({3} < {4})",
                                 year, series.Legend, upper.Legend, upperValueObject.Object.Value, seriesValueObject.Object.Value));

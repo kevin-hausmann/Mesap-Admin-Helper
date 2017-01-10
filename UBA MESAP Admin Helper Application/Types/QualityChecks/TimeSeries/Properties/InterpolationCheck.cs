@@ -26,7 +26,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             series.Object.DbReadRelatedProperties();
             dboTSProperty property = series.Object.TSProperties.GetObject(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
             if ((int)property.Interpol > 1)
-                Report(progress, series,
+                Report(progress, new TimeSeries[] { series },
                     String.Format("EF-ZR \"{0}\" hat ungewöhnliche Interpolation {1}", series.ID, property.Interpol),
                     String.Format("[{0}]", series.Legend));
         }

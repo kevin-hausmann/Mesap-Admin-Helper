@@ -267,7 +267,7 @@ namespace UBA.Mesap.AdminHelper
         private bool Exists(int year)
         {
             // Current year value exists?
-            if (_timeSeries.TSDatas.Count == 0)
+            if (Object.TSDatas.Count == 0)
             {
                 _problems.Add("Kein Wert " + year);
                 return false;

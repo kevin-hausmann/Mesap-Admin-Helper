@@ -23,7 +23,7 @@ namespace UBA.Mesap.AdminHelper
         private ISet<QualityCheck> AvailableChecks = QualityCheck.FindImplementedChecks();
 
         private const string InventoryID = "Datenprobleme";
-        private dboEventInventory existingInventory;
+        private dboEventInventory existingFindingsInventory;
         private ISet<Finding> existingFindings;
 
         private const string QualityCheckViewName = "QualityCheck";
@@ -31,6 +31,15 @@ namespace UBA.Mesap.AdminHelper
        
         private CancellationTokenSource qualityCheckSource;
         private CancellationTokenSource estimateDurationSource;
+
+        public QualityChecks()
+        {
+            InitializeComponent();
+            (((AdminHelper)Application.Current).Windows[0] as MainWindow).Register(this);
+
+            existingFindingsInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
+            _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(AvailableChecks);
+        }
 
         private bool running = false;
         public bool Idle
@@ -43,21 +52,12 @@ namespace UBA.Mesap.AdminHelper
             }
         }
 
-        public QualityChecks()
-        {
-            InitializeComponent();
-            (((AdminHelper)Application.Current).Windows[0] as MainWindow).Register(this);
-
-            existingInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
-            if (!((AdminHelper)Application.Current).database.EventInventories.Exist(InventoryID)) Console.WriteLine("NO INVENTORY FOUND");
-
-            // Bind the list of quality checks to the UI
-            _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(AvailableChecks);
-        }
-
+        /// <summary>
+        /// Update the list of active checks and re-calculate estimated execution times.
+        /// </summary>
         private async void SelectCheck(object sender, RoutedEventArgs e)
         {
-            // Cancel all previously start execution time estimation tasks (if any)
+            // Cancel all previously started execution time estimation tasks (if any)
             if (estimateDurationSource != null && !estimateDurationSource.IsCancellationRequested)
                 estimateDurationSource.Cancel();
 
@@ -68,23 +68,29 @@ namespace UBA.Mesap.AdminHelper
 
             // Estimate cumulative check execution time
             if (activeCount > 0)
-            {
-                _FilterCountLabel.Content = "Updating...";
+                try
+                {
+                    _FilterCountLabel.Content = "Updating...";
 
-                // First, update the filter information
-                await UpdateFilterAsync();
+                    // First, update the filter information
+                    await UpdateFilterAsync();
 
-                // Second, check all active checks and sum up execution times
-                estimateDurationSource?.Dispose();
-                estimateDurationSource = new CancellationTokenSource();
-                Task[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
-                await Task.WhenAll(checksEnabled);
+                    // Second, check all active checks and sum up execution times
+                    estimateDurationSource?.Dispose();
+                    estimateDurationSource = new CancellationTokenSource();
+                    Task[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
+                    await Task.WhenAll(checksEnabled);
 
-                // Third, update UI
-                _FilterCountLabel.Content = String.Format("{0} time series", filter.Count);
-            }
+                    // Third, update UI
+                    _FilterCountLabel.Content = String.Format("{0} time series", filter.Count);
+                }
+                catch (OperationCanceledException ex) {}
         }
 
+        /// <summary>
+        /// Run all active checks.
+        /// </summary>
+        /// <see cref="CancelQualityChecks(object, RoutedEventArgs)"/>
         private async void RunQualityChecks(object sender, RoutedEventArgs e)
         {
             Idle = false;
@@ -96,19 +102,13 @@ namespace UBA.Mesap.AdminHelper
             _ResultListView.Items.Clear();
 
             // Prepare execution
-            DateTime total = DateTime.Now;
-            DateTime task = DateTime.Now;
             await UpdateFilterAsync();
-            task = DateTime.Now;
             await LoadExistingFindingsAsync();
-            task = DateTime.Now;
-
-            // Find quality check to run
             qualityCheckSource = new CancellationTokenSource();
+
+            // Find quality check to run and wait for all active tasks to execute
             Task[] checksRunning = (from check in AvailableChecks where check.Enabled
                                     select check.RunAsync(filter, qualityCheckSource.Token, new Progress<ISet<Finding>>(AddFinding()))).ToArray();
-
-            // Start execution and wait for all checks to finish
             try
             {
                 await Task.WhenAll(checksRunning);
@@ -134,11 +134,12 @@ namespace UBA.Mesap.AdminHelper
             Idle = true;
         }
 
+        /// <returns>Handler used to populate UI list of findings with additional items.</returns>
         private Action<ISet<Finding>> AddFinding()
         {
-            return results =>
+            return findings =>
             {
-                foreach (Finding finding in results)
+                foreach (Finding finding in findings)
                 {
                     finding.Exists = existingFindings.Any(existing => finding.Check != null &&
                         finding.Check.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
@@ -148,24 +149,28 @@ namespace UBA.Mesap.AdminHelper
             };
         }
 
+        /// <summary>
+        /// Interrupt running quality check execution.
+        /// </summary>
+        /// <see cref="RunQualityChecks(object, RoutedEventArgs)"/>
         private void CancelQualityChecks(object sender, RoutedEventArgs e)
         {
             try
             {
                 qualityCheckSource.Cancel();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Cancel failed: " + ex.Message);
-            }
+            catch (Exception ex) {}
                 
         }
 
+        /// <summary>
+        /// Store selected findings in active Mesap database.
+        /// </summary>
         private void PushFindings(object sender, RoutedEventArgs e)
         {
-            if (existingInventory != null)
+            if (existingFindingsInventory != null)
             {
-                dboEvents events = existingInventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
+                dboEvents events = existingFindingsInventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
                 int handle = ((AdminHelper)Application.Current).database.Root.GetFreeLockHandle();
 
                 foreach (Finding finding in _ResultListView.SelectedItems)
@@ -203,11 +208,16 @@ namespace UBA.Mesap.AdminHelper
             Clipboard.SetText(MesapAPIHelper.GetListViewContentsAsCVSString(_ResultListView));
         }
 
+        private void CopyTimeSeries(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(String.Join(",", _ResultListView.Items.Cast<Finding>().Select(item => item.TimeSeriesLabel)));
+        }
+
         #region IDatabaseChangedObserver Members
 
         public void DatabaseChanged()
         {
-            existingInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
+            existingFindingsInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
 
             SelectCheck(null, null);
             _ResultListView.Items.Clear();
@@ -219,18 +229,11 @@ namespace UBA.Mesap.AdminHelper
         {
             return Task.Run(() =>
             {
-                // Use filter from quality check view in database, if any
-                dboTSViews views = ((AdminHelper)Application.Current).database.CreateObject_TsViews(QualityCheckViewName);
-                if (views.Count == 1)
-                {
-                    dboTSView view = MesapAPIHelper.GetFirstView(views);
-                    filter = new Filter(view.TsFilterGet());
-                }
-                else
-                {
-                    // Nothing found, use all time series
-                    filter = new Filter(((AdminHelper)Application.Current).database.CreateObject_TSFilter());
-                }
+                dboTSView qualityView = MesapAPIHelper.GetView(QualityCheckViewName);
+
+                // Use quality check view filter if present, check all series otherwise
+                filter = qualityView != null ? new Filter(qualityView.TsFilterGet()) :
+                    new Filter(((AdminHelper)Application.Current).database.CreateObject_TSFilter());
             });
         }
 
@@ -240,9 +243,9 @@ namespace UBA.Mesap.AdminHelper
             {
                 existingFindings = new HashSet<Finding>();
                 
-                if (existingInventory != null)
+                if (existingFindingsInventory != null)
                 {
-                    dboEvents list = existingInventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
+                    dboEvents list = existingFindingsInventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
                     list.DbReadAll();
 
                     foreach (dboEvent entry in list)

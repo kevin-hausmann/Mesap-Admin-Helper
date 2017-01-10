@@ -28,7 +28,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             series.Object.DbReadRelatedProperties();
             dboTSProperty property = series.Object.TSProperties.GetObject(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
             if (series.Object.TSDatas.Count == 0 && property.Extrapol == mspExtrapolEnum.mspExtrapolNone)
-                Report(progress, series,
+                Report(progress, new TimeSeries[] { series },
                     String.Format("Emissionsfaktor fehlt: {0}, {1}", series.ID, EndYear),
                     String.Format("Kein Emissionsfaktor vorhanden oder gemappt [{0}]", series.Legend));
         }

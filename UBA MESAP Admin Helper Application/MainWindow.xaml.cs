@@ -75,7 +75,7 @@ namespace UBA.Mesap.AdminHelper
         {
             Database newDB = _DatabaseSelect.SelectedItem as Database;
 
-            if (((AdminHelper)Application.Current).SwitchDatabase(newDB.ID))
+            if (((AdminHelper)Application.Current).SwitchDatabase(newDB.Id))
             {
                 UpdateLoginText();
 

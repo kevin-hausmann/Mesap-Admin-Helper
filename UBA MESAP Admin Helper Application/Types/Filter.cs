@@ -8,8 +8,10 @@ namespace UBA.Mesap.AdminHelper.Types
     /// </summary>
     public class Filter
     {
-        // The base API object wrapped
-        protected dboTSFilter _filter;
+        /// <summary>
+        /// The base API object wrapped.
+        /// </summary>
+        public dboTSFilter Object { get; protected set; }
 
         // This is a cache because calculation of numbers takes a lot of time
         // Negative value indicates that cache is empty and needs update on request 
@@ -21,14 +23,14 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <param name="filter">Filter to wrap</param>
         public Filter(dboTSFilter filter)
         {
-            _filter = filter;
+            Object = filter;
         }
 
         /// <summary>
-        /// Creates new wrapper with pre-set count.
+        /// Creates new wrapper with preset count.
         /// </summary>
         /// <param name="filter">Filter to wrap</param>
-        /// <param name="count">Count to pre-set. WILL NOT BE CHECKED. Giving a value 
+        /// <param name="count">Count to preset. WILL NOT BE CHECKED. Giving a value 
         /// less then zero triggers calculation on count request. Values greater then
         /// zero will be taken as actual value.</param>
         public Filter(dboTSFilter filter, int count)
@@ -38,16 +40,8 @@ namespace UBA.Mesap.AdminHelper.Types
         }
 
         /// <summary>
-        /// Get the API object wrapped
-        /// </summary>
-        public dboTSFilter Object
-        {
-            get { return _filter; }
-        }
-
-        /// <summary>
-        /// Calculates the number of timeseries filtered by filter wrapped.
-        /// Value is cached. Call ResetCountCache to reset and recalculate.
+        /// Calculates the number of time series filtered by filter wrapped.
+        /// Value is cached. Call ResetCountCache() to reset and recalculate.
         /// Returns negative value if filter is invalid.
         /// </summary>
         public int Count
@@ -55,11 +49,11 @@ namespace UBA.Mesap.AdminHelper.Types
             [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
-                if (_countCache < 0 && _filter != null) {
+                if (_countCache < 0 && Object != null) {
                     _countCache = 0;
 
                     dboList list = new dboList();
-                    list.FromString(_filter.GetTSNumbers(), VBA.VbVarType.vbLong);
+                    list.FromString(Object.GetTSNumbers(), VBA.VbVarType.vbLong);
                     foreach (object number in list) _countCache++;
                 }
 

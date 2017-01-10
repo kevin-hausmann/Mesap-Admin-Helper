@@ -16,8 +16,29 @@ namespace UBA.Mesap.AdminHelper
     /// </summary>
     class MesapAPIHelper
     {
-        // View name/id for admin helper view
-        private static String VIEW_NAME = "$Admin-Helper";
+        #region Data sheet aka. "filters" helpers
+
+        /// <summary>
+        /// Gets time series view with given identifier.
+        /// </summary>
+        /// <param name="Id">ID of view requested.</param>
+        /// <returns>The view.</returns>
+        public static dboTSView GetView(String Id)
+        {
+            AdminHelper application = ((AdminHelper)Application.Current);
+
+            return GetFirstView(application.database.CreateObject_TsViews(Id));
+        }
+
+        /// <summary>
+        /// Gets time series view with given identifier.
+        /// </summary>
+        /// <param name="Id">ID of view requested.</param>
+        /// <returns>The view.</returns>
+        public static dboTSView GetView(int Id)
+        {
+            return GetView(Convert.ToString(Id));
+        }
 
         /// <summary>
         /// Gets you the first view in given view collection.
@@ -33,19 +54,28 @@ namespace UBA.Mesap.AdminHelper
         }
 
         /// <summary>
-        /// Gets time series view with given identifier.
+        /// Calculates the number of time series filtered by a filter.
         /// </summary>
-        /// <param name="Id">ID of view requested.</param>
-        /// <returns>The view.</returns>
-        public static dboTSView GetView(String Id)
+        /// <param name="filter">Filter to evaluate.</param>
+        /// <returns>The number of time series' drawn by this filter.</returns>
+        public static int GetTimeSeriesCount(dboTSFilter filter)
         {
-            AdminHelper application = ((AdminHelper)Application.Current);
+            int result = 0;
 
-            return GetFirstView(application.database.CreateObject_TsViews(Id));
+            if (filter != null)
+            {
+                String numbers = filter.GetTSNumbers();
+
+                if (numbers != null && numbers.Length >= 2)
+                    result = numbers.Split(',').Length;
+            }
+
+            return result;
         }
 
         public static dboTSViews GetAdminHelperView()
         {
+            const string VIEW_NAME = "$Admin-Helper";
             AdminHelper application = ((AdminHelper)Application.Current);
             dboTSViews views = application.database.CreateObject_TsViews(VIEW_NAME);
             
@@ -65,15 +95,8 @@ namespace UBA.Mesap.AdminHelper
             return application.database.CreateObject_TsViews(VIEW_NAME);
         }
 
-        /// <summary>
-        /// Gets time series view with given identifier.
-        /// </summary>
-        /// <param name="Id">ID of view requested.</param>
-        /// <returns>The view.</returns>
-        public static dboTSView GetView(int Id)
-        {
-            return GetView(Convert.ToString(Id));
-        }
+        #endregion
+        #region Time series helpers
 
         /// <summary>
         /// Gets time series by identifier.
@@ -109,31 +132,13 @@ namespace UBA.Mesap.AdminHelper
             return ((AdminHelper)Application.Current).database.CreateObject_TSs(number.ToString())[number];
         }
 
-        /// <summary>
-        /// Calculates the number of timeseries filtered by a filter.
-        /// </summary>
-        /// <param name="filter">Filter to evaluate.</param>
-        /// <returns>The number of time series' drawn by this filter.</returns>
-        public static int GetTimeSeriesCount(dboTSFilter filter)
-        {
-            int result = 0;
-
-            if (filter != null)
-            {
-                String numbers = filter.GetTSNumbers();
-
-                if (numbers != null && numbers.Length >= 2)
-                    result = numbers.Split(',').Length;
-            }
-
-            return result;
-        }
+        #endregion
 
         /// <summary>
-        /// Converts a listview's contents to a CVS string.
+        /// Converts a list view's contents to a CVS string.
         /// </summary>
         /// <param name="view">The view to convert. Can not be null. 
-        /// Has to contain a gridview control.</param>
+        /// Has to contain a grid view control.</param>
         /// <returns>A CVS String object holding the view's contents.</returns>
         public static String GetListViewContentsAsCVSString(ListView view)
         {
@@ -178,7 +183,7 @@ namespace UBA.Mesap.AdminHelper
                     // Skip non-numerical values
                     else if (entry.GetValue().Equals(Double.NaN) ||
                         history.ElementAt(index - 1).GetValue().Equals(Double.NaN)) continue;
-                    // Test for equalness
+                    // Test for equal
                     else if (entry.GetValue().Equals(history.ElementAt(index - 1).GetValue()) &&
                         !notNeeded.Contains(history.ElementAt(index - 1)))
                     {
