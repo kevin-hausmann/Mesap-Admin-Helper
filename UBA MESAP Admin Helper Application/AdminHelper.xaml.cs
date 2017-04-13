@@ -39,11 +39,11 @@ namespace UBA.Mesap.AdminHelper
                 root = uiRoot.Dbo;
                 Connect(defaultDatabaseId, readOnly, exclusive);
             }
-            else throw new NullReferenceException("MESAP Initialisation failed! Error: " + rootErr);
+            else throw new NullReferenceException("MESAP Initialization failed! Error: " + rootErr);
         }
 
         /// <summary>
-        /// Switch to database with given identfier. Effects both API and
+        /// Switch to database with given identifier. Effects both API and
         /// non-API access.
         /// </summary>
         /// <param name="id">ID of database to switch to. Do not give non-existent id!</param>
@@ -106,9 +106,10 @@ namespace UBA.Mesap.AdminHelper
             }
 
             mspErrDboOpenDbEnum databaseErr = root.Databases.OpenDb(databaseId, readOnly, ref exclusive);
-            
+
             if (databaseErr == mspErrDboOpenDbEnum.mspErrNone)
                 database = root.MainDb;
+            else throw new Exception("Failed to connect to database " + databaseId + ": " + databaseErr);
 
             // Open non-API connection
             if (databaseConnection != null && databaseConnection.State != ConnectionState.Closed)
@@ -132,6 +133,7 @@ namespace UBA.Mesap.AdminHelper
                 case "ZSE_aktuell":
                 case "ZSE_Schulung":
                     databaseName = databaseId; break;
+                case "ZSE_Submission_2017_20170217":
                 case "ZSE_Submission_2016_20160203": 
                 case "ZSE_Submission_2015_20150428":
                 case "ZSE_Submission_2014_20140303":

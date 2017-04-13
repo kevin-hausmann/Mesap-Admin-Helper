@@ -145,6 +145,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="QualityChecks.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="SuspiciousEmissions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -211,6 +215,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="QualityChecks.xaml.cs">
+      <DependentUpon>QualityChecks.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SuspiciousEmissions.xaml.cs">
       <DependentUpon>SuspiciousEmissions.xaml</DependentUpon>
     </Compile>
@@ -224,6 +231,17 @@
     <Compile Include="Types\Database.cs" />
     <Compile Include="Types\DataValue.cs" />
     <Compile Include="Types\Filter.cs" />
+    <Compile Include="Types\QualityChecks\Check.cs" />
+    <Compile Include="Types\QualityChecks\Finding.cs" />
+    <Compile Include="Types\QualityChecks\QualityCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\EmptyTimeSeriesCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\ActivityData\ActitivityDataCheck.cs" />
+    <Compile Include="Types\QualityChecks\Extra\DoNothingCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\Properties\InterpolationCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\EmissionFactors\MissingEmissionFactorCheck.cs" />
+    <Compile Include="Types\QualityChecks\Extra\ListExistingFindings.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\TimeSeriesQualityCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\EmissionFactors\TSPEmissionFactorCheck.cs" />
     <Compile Include="Types\Tab.cs">
     </Compile>
     <Compile Include="Types\TimeSeries.cs" />
@@ -369,6 +387,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\datasheet.gif" />
     <Resource Include="Images\delete.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -378,9 +397,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\sort.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\datasheet.gif" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\filter.gif" />
@@ -396,7 +412,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Resource Include="Images\finding.gif" />
+    <Resource Include="Images\time.gif" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

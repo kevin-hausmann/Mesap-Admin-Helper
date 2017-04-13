@@ -53,11 +53,6 @@
                             <Image Source="Images/delete.gif" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Alle berechneten Werte löschen" Click="DeleteAllResultValues">
-                        <MenuItem.Icon>
-                            <Image Source="Images/delete.gif" />
-                        </MenuItem.Icon>
-                    </MenuItem>
                     <Separator />
                     <MenuItem Header="Historie konsolidieren" Click="ConsolidateHistory" />
                 </ContextMenu>

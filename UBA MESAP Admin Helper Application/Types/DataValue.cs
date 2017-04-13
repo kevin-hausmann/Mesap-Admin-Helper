@@ -1,35 +1,29 @@
-﻿using System;
+﻿using M4DBO;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using M4DBO;
 using System.Data.SqlClient;
 using System.Windows;
 
 namespace UBA.Mesap.AdminHelper.Types
 {
     /// <summary>
-    /// Base class for a single cell value, wraps dboTSData
+    /// Base class for a single cell value, wraps dboTSData.
     /// </summary>
-    class DataValue
+    public class DataValue
     {
-        // The base API object wrapped
-        protected dboTSData _data;
-
+        /// <summary>
+        /// The base API object wrapped.
+        /// </summary>
+        public dboTSData Object { get; protected set; }
+        
         /// <summary>
         /// Creates wrapper
         /// </summary>
         /// <param name="data">Data object to wrap</param>
         public DataValue(dboTSData data)
         {
-            _data = data;
-        }
-
-        /// <summary>
-        /// Get the object wrapped
-        /// </summary>
-        public dboTSData Object
-        {
-            get { return _data; }
+            Object = data;
         }
 
         /// <summary>
@@ -39,10 +33,10 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>true if numeric, false otherwise</returns>
         public bool IsNumericValue()
         {
-            if (_data.Value == null) return false;
+            if (Object.Value == null) return false;
 
             double test;
-            return Double.TryParse(_data.Value.ToString(), out test); 
+            return Double.TryParse(Object.Value.ToString(), out test); 
         }
 
         /// <summary>
@@ -63,32 +57,18 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>The data value as a double</returns>
         public double GetValue()
         {
-            return Convert.ToDouble(_data.Value);
-        }
-
-        public double GetScenario()
-        {
-            return _data.ScenNr;
-        }
-
-        /// <summary>
-        /// Checks whether this data value is of input type.
-        /// In opposition to the calculated type.
-        /// </summary>
-        /// <returns>true if input, false if calculated</returns>
-        public bool IsInput()
-        {
-            return _data.DataType == mspDataTypeEnum.mspDataTypeInput;
+            return Convert.ToDouble(Object.Value);
         }
 
         /// <summary>
         /// Gets the history values of this data value as a list.
         /// </summary>
         /// <returns>The (possibly empty) list of history values. Ordered, first is latest. </returns>
+        /// <see cref="ConsolidateHistory"/>
         public List<ValueHistoryEntry> GetHistory()
         {
             List<ValueHistoryEntry> result = new List<ValueHistoryEntry>();
-            IEnumerator history = _data.DbGetHistory().GetEnumerator();
+            IEnumerator history = Object.DbGetHistory().GetEnumerator();
 
             while (history.MoveNext())
             {
@@ -99,6 +79,11 @@ namespace UBA.Mesap.AdminHelper.Types
             return result;
         }
 
+        /// <summary>
+        /// Clean up history information on the database. Cannot be undone.
+        /// </summary>
+        /// <returns>Number of history records deleted.</returns>
+        /// <see cref="GetHistory"/>
         public int ConsolidateHistory()
         {
             List<ValueHistoryEntry> obsoleteEntries = MesapAPIHelper.ConsolidateHistory(GetHistory());
@@ -140,23 +125,38 @@ namespace UBA.Mesap.AdminHelper.Types
 
         //    return success;
         //}
-    }
 
-    class ValueHistoryEntry
-    {
-        private dboTSDataHistory _entry;
-
-        public ValueHistoryEntry(dboTSDataHistory historyEntry)
+        public override bool Equals(object obj)
         {
-            _entry = historyEntry;
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            DataValue other = obj as DataValue;
+            return other.Object.CntNr.Equals(Object.CntNr);
         }
 
-        /// <summary>
-        /// Get the object wrapped
-        /// </summary>
-        public dboTSDataHistory Object
+        public override int GetHashCode()
         {
-            get { return _entry; }
+            return Object.CntNr.GetHashCode();
+        }
+    }
+
+    public class ValueHistoryEntry
+    {
+        /// <summary>
+        /// The base API object wrapped.
+        /// </summary>
+        public dboTSDataHistory Object { get; protected set; }
+        
+        /// <summary>
+        /// Create wrapper.
+        /// </summary>
+        /// <param name="entry">Database object to wrap.</param>
+        public ValueHistoryEntry(dboTSDataHistory entry)
+        {
+            Object = entry;
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>The value or Double.NaN if none available (call NoValueReason() for details)</returns>
         public double GetValue()
         {
-            if (_entry.NoValueReason != 0) return Double.NaN;
-            else return Double.Parse(_entry.Value.ToString());
+            if (Object.NoValueReason != 0) return Double.NaN;
+            else return Double.Parse(Object.Value.ToString());
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>String indicating reason, one of ERR, DEL, or notation key</returns>
         public String NoValueReason()
         {
-            switch (_entry.NoValueReason)
+            switch (Object.NoValueReason)
             {
                 case -2: return "ERR";
                 case -1: return "DEL";
@@ -185,14 +185,18 @@ namespace UBA.Mesap.AdminHelper.Types
 
         public override bool Equals(object obj)
         {
-            ValueHistoryEntry other = obj as ValueHistoryEntry;
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
 
-            return other.Object.CntNr.Equals(_entry.CntNr);
+            ValueHistoryEntry other = obj as ValueHistoryEntry;
+            return other.Object.CntNr.Equals(Object.CntNr);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return Object.CntNr.GetHashCode();
         }
     }
 }

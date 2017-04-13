@@ -224,7 +224,7 @@ namespace UBA.Mesap.AdminHelper
                 int count = 0;
                 double test;
 
-                foreach (dboTSData data in _timeSeries.TSDatas)
+                foreach (dboTSData data in Object.TSDatas)
                     if (data.Value != null && Double.TryParse(data.Value.ToString(), out test) &&
                         Convert.ToDouble(data.Value) != 0 && data.NoValueReason == 0) count++;
 
@@ -239,7 +239,7 @@ namespace UBA.Mesap.AdminHelper
                 int count = 0;
                 double test;
 
-                foreach (dboTSData data in _timeSeries.TSDatas)
+                foreach (dboTSData data in Object.TSDatas)
                     if (data.Value != null && Double.TryParse(data.Value.ToString(), out test) &&
                         Convert.ToDouble(data.Value) == 0 && data.NoValueReason == 0) count++;
 
@@ -253,7 +253,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 int count = 0;
                 
-                foreach (dboTSData data in _timeSeries.TSDatas)
+                foreach (dboTSData data in Object.TSDatas)
                     if (data.NoValueReason > 0) count++;
 
                 return count;
@@ -266,7 +266,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 int count = 0;
 
-                foreach (dboTSData data in _timeSeries.TSDatas)
+                foreach (dboTSData data in Object.TSDatas)
                     if (data.NoValueReason == -1) count++;
 
                 return count;
@@ -277,7 +277,7 @@ namespace UBA.Mesap.AdminHelper
         {
             get
             {
-                foreach (dboTSProperty property in _timeSeries.TSProperties)
+                foreach (dboTSProperty property in Object.TSProperties)
                     if (property.AnnexObjNr > 0) return "Ja";
 
                 return "Nein";
@@ -290,7 +290,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 int count = 0;
 
-                foreach (dboTSData data in _timeSeries.TSDatas)
+                foreach (dboTSData data in Object.TSDatas)
                     count += MesapAPIHelper.ConsolidateHistory(new DataValue(data).GetHistory()).Count;
 
                 return count;

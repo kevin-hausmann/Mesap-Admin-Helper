@@ -148,21 +148,7 @@ namespace UBA.Mesap.AdminHelper
 
             // Find candidates
             foreach (CheckedDataValue data in _ValuesListView.Items)
-                if (data.IsInput()) valuesToBeDeleted.Add(data);
-
-            // Delete
-            DeleteMultipleValues(valuesToBeDeleted, caption, question);
-        }
-
-        private void DeleteAllResultValues(object sender, RoutedEventArgs e)
-        {
-            String caption = "Alle berechneten Werte löschen";
-            String question = "Wollen Sie alle berechneten Werte in der Zeitreihe löschen?";
-            ArrayList valuesToBeDeleted = new ArrayList();
-
-            // Find candidates
-            foreach (CheckedDataValue data in _ValuesListView.Items)
-                if (!data.IsInput()) valuesToBeDeleted.Add(data);
+                valuesToBeDeleted.Add(data);
 
             // Delete
             DeleteMultipleValues(valuesToBeDeleted, caption, question);
@@ -280,19 +266,15 @@ namespace UBA.Mesap.AdminHelper
     /// </summary>
     class CheckedDataValue : DataValue
     {
-
-        public CheckedDataValue(dboTSData data)
-            : base(data)
-        { }
+        public CheckedDataValue(dboTSData data) : base(data) {}
 
         public String Timepoint
         {
             get 
             {
-                Int32 year = 2000 + _data.PeriodNr;
+                Int32 year = 2000 + Object.PeriodNr;
                 
-                if (IsInput()) return  year + ", erfasst (" + GetScenario() + ")";
-                else return year + ", berechnet (" + GetScenario() + ")";
+                return  year + ", erfasst (" + Object.ScenNr + ")";
             }
         }
 
@@ -300,8 +282,8 @@ namespace UBA.Mesap.AdminHelper
         {
             get 
             {
-                if (IsNumericValue()) return _data.Value.ToString();
-                else switch (_data.NoValueReason)
+                if (IsNumericValue()) return Object.Value.ToString();
+                else switch (Object.NoValueReason)
                 {
                     case -2: return "ERR";
                     case -1: return "DEL";
@@ -340,7 +322,7 @@ namespace UBA.Mesap.AdminHelper
         {
             get 
             {
-                if (_data.AnnexObjNr == 0) return "Nein";
+                if (Object.AnnexObjNr == 0) return "Nein";
                 else return "Ja";
             }
         }
@@ -349,7 +331,7 @@ namespace UBA.Mesap.AdminHelper
         {
             get
             {
-                return _data.ChangeDate.ToShortDateString();
+                return Object.ChangeDate.ToShortDateString();
             }
         }
     }
