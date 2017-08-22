@@ -11,7 +11,7 @@ namespace UBA.Mesap.AdminHelper
     /// Interaction logic for App.xaml
     /// Basic application class. Organizes database access (API and non-API).
     /// </summary>
-    public partial class AdminHelper : Application
+    public partial class AdminHelper : Application, IDisposable
     {
         // API base objects 
         internal dboRoot root;
@@ -63,6 +63,11 @@ namespace UBA.Mesap.AdminHelper
         public bool CanSwitchDatabase(String id)
         {
             return BuildDBConnectionString(id) != null;
+        }
+        
+        public void Dispose()
+        {
+            databaseConnection.Dispose();
         }
 
         protected override void OnExit(ExitEventArgs e)

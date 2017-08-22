@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using UBA.Mesap.AdminHelper.Types;
+using System.Data;
 
 namespace UBA.Mesap.AdminHelper
 {
@@ -50,27 +51,13 @@ namespace UBA.Mesap.AdminHelper
             Cursor = Cursors.Wait;
             _HistoryListView.Items.Clear();
                         
-            // Reports
-            ProcessType("Report", "Bericht", 2, 1, 14, "ChangeID", 13);
-
-            // Calculations
-            ProcessType("CalculationMethod", "Berechnungsverfahren", 2, 1, 11, "ChangeID", 10);
-
-            // Trees
-            ProcessType("Tree", "Baum", 2, 1, 8, "ChangeID", 7);
-
-            // Descriptors
-            ProcessType("TreeObject", "Deskriptor", 2, 1, 12, "ChangeID", 11);
-            
-            // TimeSeries
-            ProcessType("TimeSeries", "Zeitreihe", 3, 2, 13, "ChangeID", 11);
-
-            // Views
-            ProcessType("TimeSeriesView", "Zeitreihenansicht", 2, 1, 16, "ChangeID", 15);
-
-            // CRF Variables
-            ProcessType("CrfVariable", "CRF-Filter", 2, 4, 14, "ChangeName", 13);
-            
+            // Go look for changes for each type of database object
+            ProcessType("Bericht", "Report");
+            ProcessType("Berechnungsverfahren", "CalculationMethod");
+            ProcessType("Baum", "Tree");
+            ProcessType("Deskriptor", "TreeObject");
+            ProcessType("Zeitreihe", "TimeSeries");
+            ProcessType("Zeitreihenansicht", "TimeSeriesView");
             // Values (extra code for timeseries relation)
             if ((bool)_ShowValuesCheckBox.IsChecked)
                 ProcessValues();
@@ -86,25 +73,26 @@ namespace UBA.Mesap.AdminHelper
         /// <summary>
         /// Generates history for a certain type of object
         /// </summary>
-        /// <param name="table">Name of table objects are stored in</param>
         /// <param name="type">String to represent type in view</param>
+        /// <param name="table">Name of table objects are stored in</param>
         /// <param name="nameCol">Table column to read object's name from</param>
         /// <param name="idCol">Table column to read object's id from</param>
         /// <param name="dateCol">Table column to read last change date from</param>
         /// <param name="userCol">Table column to read user name from</param>
-        private void ProcessType(String table, String type, int nameCol, int idCol, int dateCol, String userColName, int userCol)
+        private void ProcessType(String type, String table, String nameCol = "Name", String idCol = "Id",
+            String dateCol = "ChangeDate", String userCol = "ChangeID")
         {
             SqlDataReader reader = null;
 
             try
             {
-                reader = ExecuteQuery("SELECT * FROM " + table + " WHERE (ChangeDate > '" + _FromDateTimePicker.Value + "'" +
-                    " AND ChangeDate < '" + _ToDateTimePicker.Value + "'" +
-                    " AND " + userColName + " LIKE '%" + _UserTextBox.Text + "%')");
-                
+                String columns = String.Join(", ", new string[] { nameCol, idCol, dateCol, userCol });
+                String query = "SELECT " + columns + " FROM " + table +
+                    " WHERE ChangeDate > @after AND ChangeDate < @before AND " + userCol + " LIKE @user";
+
+                reader = ExecuteQuery(query);
                 while (reader.Read())
-                    _HistoryListView.Items.Add(CreateEntry(type, reader.GetString(nameCol),
-                        reader.GetString(idCol), reader.GetDateTime(dateCol), reader.GetString(userCol)));
+                    _HistoryListView.Items.Add(CreateEntry(type, reader.GetString(0), reader.GetString(1), reader.GetDateTime(2), reader.GetString(3)));
             }
             catch (Exception ex)
             {
@@ -124,16 +112,18 @@ namespace UBA.Mesap.AdminHelper
 
             try
             {
-                reader = ExecuteQuery("SELECT TsNr, PeriodNr, ChangeDate, ChangeName FROM TimeSeriesData WHERE (ChangeDate > '" + _FromDateTimePicker.Value + "'" +
-                        " AND ChangeDate < '" + _ToDateTimePicker.Value + "'" +
-                        " AND ChangeName LIKE '%" + _UserTextBox.Text + "%')");
+                reader = ExecuteQuery("SELECT TsNr, PeriodNr, ChangeDate, ChangeName FROM TimeSeriesData" +
+                        " WHERE ChangeDate > @after AND ChangeDate < @before AND ChangeName LIKE @user");
 
                 TimeSeries series;
                 while (reader.Read())
                 {
                     series = new TimeSeries(MesapAPIHelper.GetTimeSeries(reader.GetValue(0).ToString()));
-                    _HistoryListView.Items.Add(CreateEntry("Zeitreihenwert " + (reader.GetInt32(1) + 2000),
-                    series.Name, series.ID + " - " + series.Legend, reader.GetDateTime(2), reader.GetString(3)));
+                    _HistoryListView.Items.Add(CreateEntry(
+                        "Zeitreihenwert " + (reader.GetInt32(1) + 2000),
+                        series.Name,
+                        series.ID + " - " + series.Legend,
+                        reader.GetDateTime(2), reader.GetString(3)));
                 }
             }
             catch (Exception ex)
@@ -151,8 +141,13 @@ namespace UBA.Mesap.AdminHelper
         private SqlDataReader ExecuteQuery(String query)
         {
             SqlConnection connection = ((AdminHelper)Application.Current).GetDirectDBConnection();
+            SqlCommand command = new SqlCommand(query, connection);
             
-            return new SqlCommand(query, connection).ExecuteReader();
+            command.Parameters.Add("@after", SqlDbType.DateTime).Value = _FromDateTimePicker.Value;
+            command.Parameters.Add("@before", SqlDbType.DateTime).Value = _ToDateTimePicker.Value;
+            command.Parameters.Add("@user", SqlDbType.NChar).Value = '%' + _UserTextBox.Text + '%';
+                        
+            return command.ExecuteReader();
         }
 
         /// <summary>

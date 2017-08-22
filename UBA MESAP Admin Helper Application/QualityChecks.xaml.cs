@@ -84,7 +84,7 @@ namespace UBA.Mesap.AdminHelper
                     // Third, update UI
                     _FilterCountLabel.Content = String.Format("{0} time series", filter.Count);
                 }
-                catch (OperationCanceledException ex) {}
+                catch (OperationCanceledException) {}
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 await Task.WhenAll(checksRunning);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 foreach (Task faulted in checksRunning.Where(t => t.IsFaulted))
                 {
@@ -159,7 +159,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 qualityCheckSource.Cancel();
             }
-            catch (Exception ex) {}
+            catch (Exception) {}
                 
         }
 
