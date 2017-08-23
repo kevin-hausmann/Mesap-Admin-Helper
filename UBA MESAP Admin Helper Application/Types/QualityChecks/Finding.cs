@@ -22,7 +22,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         /// IDs of the time series' checked and effected by this finding.
         /// </summary>
         public int[] TimeSeries { get; protected set; }
-        public string TimeSeriesLabel => String.Join(",", TimeSeries);
+        public string TimeSeriesLabel => TimeSeries == null ? "None" : String.Join(",", TimeSeries);
 
         /// <summary>
         /// Check that made this finding
