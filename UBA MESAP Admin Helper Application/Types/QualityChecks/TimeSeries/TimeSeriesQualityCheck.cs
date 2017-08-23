@@ -26,11 +26,6 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected abstract short EndYear { get; }
 
         /// <summary>
-        /// Priority values used for findings created by Report().
-        /// </summary>
-        protected abstract Finding.PriorityEnum DefaultPriority { get; }
-
-        /// <summary>
         /// Filter definition for the task, CheckTimeSeries() will be called
         /// for matching series only. Format:
         /// [[dimension1, descriptor1, ..., descriptorX], [dimension1, descriptor1, ..., descriptorX], ...]
@@ -116,8 +111,8 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected abstract void CheckTimeSeries(TimeSeries series, IProgress<ISet<Finding>> progress);
 
         /// <summary>
-        /// Convenience to report a finding with common values. Uses the checks DefaultPriority and
-        /// will read contact and category from time series object given. Advances FindingCount.
+        /// Convenience method to report a finding with common values. Uses the check's FindingPriority and
+        /// will read contact and category from the first time series object given. Advances FindingCount.
         /// </summary>
         /// <param name="progress">Progress handle to report to</param>
         /// <param name="series">Time series checked. Put main series in first place.</param>
@@ -127,7 +122,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         {
             ISet<Finding> result = new HashSet<Finding>();
             result.Add(new Finding(this, series.Select(serie => serie.Object.TsNr).ToArray(),
-                title, description, CategoriesForTimeSeries(series[0]), ContactsForTimeSeries(series[0]), DefaultPriority));
+                title, description, CategoriesForTimeSeries(series[0]), ContactsForTimeSeries(series[0]), FindingPriority));
 
             progress.Report(result);
             FindingCount++;

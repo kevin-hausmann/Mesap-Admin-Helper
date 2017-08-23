@@ -20,9 +20,10 @@ namespace UBA.Mesap.AdminHelper
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private ISet<QualityCheck> AvailableChecks = QualityCheck.FindImplementedChecks();
+        private const string ChecksInventoryID = "Checks";
+        private ISet<QualityCheck> availableChecks;
 
-        private const string InventoryID = "Datenprobleme";
+        private const string FindingsInventoryID = "Datenprobleme";
         private dboEventInventory existingFindingsInventory;
         private ISet<Finding> existingFindings;
 
@@ -37,8 +38,12 @@ namespace UBA.Mesap.AdminHelper
             InitializeComponent();
             (((AdminHelper)Application.Current).Windows[0] as MainWindow).Register(this);
 
-            existingFindingsInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
-            _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(AvailableChecks);
+            dboEventInventories inventories = ((AdminHelper)Application.Current).database.EventInventories;
+
+            availableChecks = QualityCheck.FindImplementedChecks(inventories[ChecksInventoryID]);
+            _QualityCheckList.ItemsSource = new ObservableCollection<QualityCheck>(availableChecks);
+
+            existingFindingsInventory = inventories[FindingsInventoryID];
         }
 
         private bool running = false;
@@ -62,7 +67,7 @@ namespace UBA.Mesap.AdminHelper
                 estimateDurationSource.Cancel();
 
             // Determine active check count and adjust UI
-            int activeCount = AvailableChecks.Count(check => check.Enabled);
+            int activeCount = availableChecks.Count(check => check.Enabled);
             _RunQualityChecks.IsEnabled = activeCount > 0;
             _FilterCountLabel.Visibility = activeCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
@@ -78,7 +83,7 @@ namespace UBA.Mesap.AdminHelper
                     // Second, check all active checks and sum up execution times
                     estimateDurationSource?.Dispose();
                     estimateDurationSource = new CancellationTokenSource();
-                    Task[] checksEnabled = (from check in AvailableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
+                    Task[] checksEnabled = (from check in availableChecks where check.Enabled select check.EstimateExecutionTimeAsync(filter, estimateDurationSource.Token)).ToArray();
                     await Task.WhenAll(checksEnabled);
 
                     // Third, update UI
@@ -107,7 +112,7 @@ namespace UBA.Mesap.AdminHelper
             qualityCheckSource = new CancellationTokenSource();
 
             // Find quality check to run and wait for all active tasks to execute
-            Task[] checksRunning = (from check in AvailableChecks where check.Enabled
+            Task[] checksRunning = (from check in availableChecks where check.Enabled
                                     select check.RunAsync(filter, qualityCheckSource.Token, new Progress<ISet<Finding>>(AddFinding()))).ToArray();
             try
             {
@@ -198,7 +203,7 @@ namespace UBA.Mesap.AdminHelper
             }
             else
             {
-                MessageBox.Show("Kein Ereignisinventar mit der ID \"" + InventoryID + "\" gefunden!",
+                MessageBox.Show("Kein Ereignisinventar mit der ID \"" + FindingsInventoryID + "\" gefunden!",
                     "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
@@ -217,7 +222,7 @@ namespace UBA.Mesap.AdminHelper
 
         public void DatabaseChanged()
         {
-            existingFindingsInventory = ((AdminHelper)Application.Current).database.EventInventories[InventoryID];
+            existingFindingsInventory = ((AdminHelper)Application.Current).database.EventInventories[FindingsInventoryID];
 
             SelectCheck(null, null);
             _ResultListView.Items.Clear();

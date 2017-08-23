@@ -6,16 +6,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 {
     class TSPEmissionFactorCheck : TimeSeriesQualityCheck
     {
-        public override string Name => "Plausibilität der Verhältnisse einzelner Staubfraktionen und BC";
-        public override string Description => "Vergleicht passende Emissionsfaktoren für Stäube und stellt sicher, dass die Fraktionen nicht zu groß sind.";
-        public override short DatabaseReference => 114;
+        public override string Id => "EF_Staubfraktionen";
 
         public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(4000);
         
         protected override short StartYear => 1990;
         protected override short EndYear => 2020;
-        protected override Finding.PriorityEnum DefaultPriority => Finding.PriorityEnum.High;
-
+        
         /// <summary>
         /// Number of decimal places checked when comparing values.
         /// </summary>
@@ -92,9 +89,8 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                         // Rounding needed to avoid number conversion artifacts
                         Math.Round(upperValueObject.Object.Value - seriesValueObject.Object.Value, Precision) < 0)
                             Report(progress, new TimeSeries[] { series, upper },
-                            String.Format("Staubfraktionen {0} problematisch!", year),
-                            String.Format("Wert in Zeitreihe [{1}] größer als in Zeitreihe [{2}] ({3} < {4})",
-                                year, series.Legend, upper.Legend, upperValueObject.Object.Value, seriesValueObject.Object.Value));
+                            String.Format(FindingTitle, year),
+                            String.Format(FindingText, year, series.Legend, upper.Legend, upperValueObject.Object.Value, seriesValueObject.Object.Value));
                     
                 }
                 catch (Exception)
