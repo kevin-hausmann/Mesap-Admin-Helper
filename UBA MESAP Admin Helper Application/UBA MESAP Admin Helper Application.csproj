@@ -237,6 +237,7 @@
     <Compile Include="Types\QualityChecks\TimeSeries\EmptyTimeSeriesCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\ActivityData\ActitivityDataCheck.cs" />
     <Compile Include="Types\QualityChecks\Extra\DoNothingCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\Properties\VirtualFormulaCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\Properties\InterpolationCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\EmissionFactors\MissingEmissionFactorCheck.cs" />
     <Compile Include="Types\QualityChecks\Extra\ListExistingFindings.cs" />
