@@ -24,7 +24,8 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             DataValue currentValue = series.RetrieveData(EndYear);
             DataValue previousValue = series.RetrieveData(StartYear);
             
-            if (currentValue == null && previousValue != null)
+            if ((currentValue == null || !currentValue.IsActualValue()) &&
+                (previousValue != null && previousValue.IsActualValue()))
                 Report(progress, new TimeSeries[] { series }, 
                     String.Format(FindingTitle, series.ID, EndYear),
                     String.Format(FindingText, EndYear, series.Legend));
