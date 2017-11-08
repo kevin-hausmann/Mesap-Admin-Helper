@@ -13,10 +13,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         protected override short StartYear => -1;
         protected override short EndYear => -1;
         
-        protected override int[,] FindWorkloadFilter => new int[,]
-        {
-            {(int)DimensionEnum.Type, (int)DescriptorEnum.AD, (int)DescriptorEnum.EF, (int)DescriptorEnum.EM},
-        };
+        protected override int[,] FindWorkloadFilter => new int[,] {};
         
         protected override void CheckTimeSeries(TimeSeries series, IProgress<ISet<Finding>> progress)
         {
@@ -31,28 +28,20 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             series.Object.DbReadRelatedProperties();
             dboTSProperty property = series.Object.TSProperties.GetObject(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
 
-            if (type == (int)DescriptorEnum.EF && area != (int)DescriptorEnum.Germany)
-            {
-                if (property.Interpol > mspInterpolEnum.mspInterpolLinear || property.Extrapol != mspExtrapolEnum.mspExtrapolNone)
-                    Report(progress, new TimeSeries[] { series },
-                        String.Format(FindingTitle, "ABL/NBL-EF", series.ID, property.Interpol + ", " + property.Extrapol),
-                        String.Format(FindingText, series.Legend));
-            }
-            else if (type == (int)DescriptorEnum.EF)
-            {
-                if (property.Interpol > mspInterpolEnum.mspInterpolLinear)
-                    Report(progress, new TimeSeries[] { series },
-                        String.Format(FindingTitle, "EF", series.ID, property.Interpol + ", " + property.Extrapol),
-                        String.Format(FindingText, series.Legend));
-            }
-            else 
+            if (type == (int)DescriptorEnum.AD || type == (int)DescriptorEnum.EM)
             {
                 if (property.Interpol > mspInterpolEnum.mspInterpolNone || property.Extrapol > mspExtrapolEnum.mspExtrapolNone)
                     Report(progress, new TimeSeries[] { series },
-                        String.Format(FindingTitle, type == (int)DescriptorEnum.AD ? "AR" : "EM", series.ID, property.Interpol + ", " + property.Extrapol),
+                        String.Format(FindingTitle, type == (int)DescriptorEnum.AD ? "AR-" : "EM-", series.ID, property.Interpol + ", " + property.Extrapol),
+                        String.Format(FindingText, series.Legend)); 
+            }
+            else 
+            {
+                if (property.Interpol > mspInterpolEnum.mspInterpolLinear)
+                    Report(progress, new TimeSeries[] { series },
+                        String.Format(FindingTitle, "Nicht-AR/EM-", series.ID, property.Interpol + ", " + property.Extrapol),
                         String.Format(FindingText, series.Legend));
             }
-
         }
     }
 }
