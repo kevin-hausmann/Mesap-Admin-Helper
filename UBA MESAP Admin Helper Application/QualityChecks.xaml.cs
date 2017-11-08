@@ -146,8 +146,10 @@ namespace UBA.Mesap.AdminHelper
             {
                 foreach (Finding finding in findings)
                 {
-                    finding.Exists = existingFindings.Any(existing => finding.Check != null &&
+                    Finding clone = existingFindings.FirstOrDefault(existing => finding.Check != null &&
                         finding.Check.Equals(existing.Check) && finding.Check.ConsideredEqual(existing, finding));
+                    if (clone != null)
+                        finding.Status = clone.Status;
 
                     _ResultListView.Items.Add(finding);
                 }

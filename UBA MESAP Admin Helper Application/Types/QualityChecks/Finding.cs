@@ -32,6 +32,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         /// Whether or not this finding is already present in the Mesap database.
         /// </summary>
         public bool Exists { get; set; }
+        public StatusEnum Status { get; set; }
 
         public PriorityEnum Priority { get; protected set; }
         public string PriorityLabel => GetEnumDescription(Priority);
@@ -86,7 +87,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
         private const int descriptionItemNr = 78;
 
         private const int categoryItemNr = 79;
-        // private const int statusItemNr = 80;
+        private const int statusItemNr = 80;
         private const int priorityItemNr = 81;
         private const int contactItemNr = 82;
         // private const int createDateItemNr = 84;
@@ -138,6 +139,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             finding.Description = dboEvent.EventItemDatas.GetObject(descriptionItemNr).MemoData;
 
             finding.Check = QualityCheck.ForDatabaseReference(dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
+            finding.Status = (StatusEnum)Enum.ToObject(typeof(StatusEnum), dboEvent.EventItemDatas.GetObject(statusItemNr).ReferenceData);
             finding.Priority = (PriorityEnum)Enum.ToObject(typeof(PriorityEnum), dboEvent.EventItemDatas.GetObject(priorityItemNr).ReferenceData);
 
             foreach (dboEventItemData contact in dboEvent.EventItemDatas.GetCollection(contactItemNr))
@@ -155,6 +157,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     Console.WriteLine(String.Format("Unknown descriptor reference {0} for finding \"{1}\"", category.ReferenceData, finding.Title));
             }
 
+            finding.Exists = true;
             return finding;
         }
 
