@@ -234,6 +234,7 @@
     <Compile Include="Types\QualityChecks\Check.cs" />
     <Compile Include="Types\QualityChecks\Finding.cs" />
     <Compile Include="Types\QualityChecks\QualityCheck.cs" />
+    <Compile Include="Types\QualityChecks\TimeSeries\CopyPasteMesapCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\EmptyTimeSeriesCheck.cs" />
     <Compile Include="Types\QualityChecks\TimeSeries\ActivityData\ActitivityDataCheck.cs" />
     <Compile Include="Types\QualityChecks\Extra\DoNothingCheck.cs" />
