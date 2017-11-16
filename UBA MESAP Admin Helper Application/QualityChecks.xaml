@@ -128,15 +128,14 @@
             </Button>
             <Label Name="_FilterCountLabel" Margin="5" Visibility="Collapsed" />
         </StackPanel>
-        <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+            <Button Name="_PushFindingsButton" Margin="5" Click="PushFindings" IsEnabled="False" Visibility="Visible">
+                Datenproblem(e) erzeugen!
+            </Button>
+        </StackPanel>
+        <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple" SelectionChanged="FindingSelected">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Datenproblem(e) erzeugen" Click="PushFindings">
-                        <MenuItem.Icon>
-                            <Image Source="Images/finding.gif" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <Separator />
                     <MenuItem Header="Alles kopieren" Click="CopyAll">
                         <MenuItem.Icon>
                             <Image Source="Images/copy.gif" />

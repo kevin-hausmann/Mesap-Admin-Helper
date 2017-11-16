@@ -171,6 +171,14 @@ namespace UBA.Mesap.AdminHelper
         }
 
         /// <summary>
+        /// Update push finding button
+        /// </summary>
+        private void FindingSelected(object sender, SelectionChangedEventArgs e)
+        {
+            _PushFindingsButton.IsEnabled = _ResultListView.SelectedItems.Count > 0;
+        }
+
+        /// <summary>
         /// Store selected findings in active Mesap database.
         /// </summary>
         private void PushFindings(object sender, RoutedEventArgs e)
