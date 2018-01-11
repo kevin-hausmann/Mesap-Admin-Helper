@@ -21,7 +21,8 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             for (int year = StartYear; year < EndYear; year++)
             {
                 DataValue value = series.RetrieveData(year);
-                if (value != null && value.IsNumericValue())
+                // We only care about data that has been created in the Mesap Datasheet. And we ignore zeros.
+                if (value != null && M4DBO.mspM4OriginEnum.mspM4OriginDataSheet == value.Object.Origin && value.IsActualValue())
                 {
                     double raw = value.GetValue();
                     int length = (raw + "").Length;
