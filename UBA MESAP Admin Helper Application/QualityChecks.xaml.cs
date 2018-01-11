@@ -187,6 +187,7 @@ namespace UBA.Mesap.AdminHelper
             {
                 dboEvents events = existingFindingsInventory.CreateObject_Events(mspEventReadMode.mspEventReadModeObjects);
                 int handle = ((AdminHelper)Application.Current).database.Root.GetFreeLockHandle();
+                int findingCreatedCount = 0;
 
                 foreach (Finding finding in _ResultListView.SelectedItems)
                 {
@@ -197,6 +198,8 @@ namespace UBA.Mesap.AdminHelper
                     {
                         Finding.ToDatabaseEntry(newEvent, finding);
                         finding.Exists = true;
+                        finding.Status = Finding.StatusEnum.New;
+                        findingCreatedCount++;
                     }
                     catch (Exception ex)
                     {
@@ -210,10 +213,12 @@ namespace UBA.Mesap.AdminHelper
                 events.DisableModifyAll(handle);
 
                 _ResultListView.Items.Refresh();
+                MessageBox.Show(findingCreatedCount + " Fundstelle(n) erzeugt.",
+                    "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Kein Ereignisinventar mit der ID \"" + FindingsInventoryID + "\" gefunden!",
+               MessageBox.Show("Kein Ereignisinventar mit der ID \"" + FindingsInventoryID + "\" gefunden!",
                     "Ergebnisse speichern", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
