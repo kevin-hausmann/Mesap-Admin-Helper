@@ -137,7 +137,10 @@ namespace UBA.Mesap.AdminHelper
                     databaseName = databaseId.ToUpper(); break; 
                 case "ZSE_aktuell":
                 case "ZSE_Schulung":
+                case "EMMa":
+                case "EMMa_2018":
                     databaseName = databaseId; break;
+                case "ZSE_Submission_2018_20180214":
                 case "ZSE_Submission_2017_20170217":
                 case "ZSE_Submission_2016_20160203": 
                 case "ZSE_Submission_2015_20150428":
