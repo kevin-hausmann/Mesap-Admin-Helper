@@ -217,13 +217,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
                     if (list.Count == 1)
                     {
                         dboEvent check = list[qualityCheck.Id];
-                        qualityCheck.DatabaseReference = check.EventNr;
+                        qualityCheck.DatabaseReference = (int) check.EventNr;
                         qualityCheck.Name = check.EventItemDatas.GetObject(nameItemNr).TextData;
                         qualityCheck.Description = check.EventItemDatas.GetObject(descriptionItemNr).MemoData;
                         qualityCheck.FindingTitle = check.EventItemDatas.GetObject(findingTitleItemNr).TextData;
                         qualityCheck.FindingText = check.EventItemDatas.GetObject(findingTextItemNr).TextData;
                         qualityCheck.FindingPriority = (PriorityEnum) Enum.ToObject(typeof(PriorityEnum),
-                            check.EventItemDatas.GetObject(findingPriorityItemNr).ReferenceData - findingPriorityOffset);
+                            (int) check.EventItemDatas.GetObject(findingPriorityItemNr).ReferenceData - findingPriorityOffset);
 
                         implementedChecks.Add(qualityCheck);
                     }

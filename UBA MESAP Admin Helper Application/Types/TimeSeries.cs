@@ -140,9 +140,12 @@ namespace UBA.Mesap.AdminHelper.Types
         /// <returns>The current flag status</returns>
         public bool IsMarkedConsistent()
         {
-            Object.DbReadRelatedProperties(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
+            // This setting does no longer exist
+            return false;
+
+            /* Object.DbReadRelatedProperties(mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown);
             return Object.TSProperties.GetObject(
-                     mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown).IsTsOk;
+                     mspTimeKeyEnum.mspTimeKeyYear, mspTimeKeyTypeEnum.mspTimeKeyTypeUnknown).IsTsOk; */
         }
 
         /// <summary>

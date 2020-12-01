@@ -138,13 +138,13 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
             finding.Title = dboEvent.EventItemDatas.GetObject(titleItemNr).TextData;
             finding.Description = dboEvent.EventItemDatas.GetObject(descriptionItemNr).MemoData;
 
-            finding.Check = QualityCheck.ForDatabaseReference(dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
-            finding.Status = (StatusEnum)Enum.ToObject(typeof(StatusEnum), dboEvent.EventItemDatas.GetObject(statusItemNr).ReferenceData);
-            finding.Priority = (PriorityEnum)Enum.ToObject(typeof(PriorityEnum), dboEvent.EventItemDatas.GetObject(priorityItemNr).ReferenceData);
+            finding.Check = QualityCheck.ForDatabaseReference((int) dboEvent.EventItemDatas.GetObject(originItemNr).ReferenceData);
+            finding.Status = (StatusEnum)Enum.ToObject(typeof(StatusEnum),(int) dboEvent.EventItemDatas.GetObject(statusItemNr).ReferenceData);
+            finding.Priority = (PriorityEnum)Enum.ToObject(typeof(PriorityEnum), (int) dboEvent.EventItemDatas.GetObject(priorityItemNr).ReferenceData);
 
             foreach (dboEventItemData contact in dboEvent.EventItemDatas.GetCollection(contactItemNr))
-                if (Enum.IsDefined(typeof(ContactEnum), contact.ReferenceData))
-                    finding.contacts.Add((ContactEnum)Enum.ToObject(typeof(ContactEnum), contact.ReferenceData));
+                if (Enum.IsDefined(typeof(ContactEnum), (int) contact.ReferenceData))
+                    finding.contacts.Add((ContactEnum)Enum.ToObject(typeof(ContactEnum), (int) contact.ReferenceData));
                 else
                     Console.WriteLine(String.Format("Unknown contact reference {0} for finding \"{1}\"", contact.ReferenceData, finding.Title));
 

@@ -321,7 +321,7 @@
     </COMReference>
     <COMReference Include="M4ALO">
       <Guid>{186B82EA-EC9E-4EE4-ABDD-A087E706FE2E}</Guid>
-      <VersionMajor>1041</VersionMajor>
+      <VersionMajor>1052</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
@@ -330,7 +330,7 @@
     </COMReference>
     <COMReference Include="M4DBO">
       <Guid>{C5507C91-59F2-45A2-9050-8C1E8671A42F}</Guid>
-      <VersionMajor>1076</VersionMajor>
+      <VersionMajor>1085</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
@@ -348,7 +348,7 @@
     </COMReference>
     <COMReference Include="M4UIO">
       <Guid>{AB823BDF-A551-45A8-A18A-5C7B74330A3A}</Guid>
-      <VersionMajor>1089</VersionMajor>
+      <VersionMajor>1100</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>

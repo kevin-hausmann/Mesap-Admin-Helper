@@ -35,7 +35,7 @@ namespace UBA.Mesap.AdminHelper
 
             if (rootErr == mspErrUioInitEnum.mspErrNone)
             {
-                uiRoot.Dbo.LoginWithNTAccount();
+                uiRoot.Dbo.Login(Private.MesapAdminUsername, Private.MesapAdminPassword);
                 root = uiRoot.Dbo;
                 Connect(defaultDatabaseId, readOnly, exclusive);
             }
@@ -132,14 +132,15 @@ namespace UBA.Mesap.AdminHelper
             {
                 case "ESz":
                 case "BEU":
-                case "PoSo":
+                case "PoSo_aktuell":
                 case "Enerdat":
                     databaseName = databaseId.ToUpper(); break; 
                 case "ZSE_aktuell":
-                case "ZSE_Schulung":
-                case "EMMa":
                 case "EMMa_2018":
+                case "EMMa_2020":
                     databaseName = databaseId; break;
+                case "ZSE_Submission_2020_20200325":
+                case "ZSE_Submission_2019_20190214":
                 case "ZSE_Submission_2018_20180214":
                 case "ZSE_Submission_2017_20170217":
                 case "ZSE_Submission_2016_20160203": 
