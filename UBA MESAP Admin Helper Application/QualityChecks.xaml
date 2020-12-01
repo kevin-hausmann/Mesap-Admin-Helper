@@ -129,9 +129,7 @@
             <Label Name="_FilterCountLabel" Margin="5" Visibility="Collapsed" />
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
-            <Button Name="_PushFindingsButton" Margin="5" Click="PushFindings" IsEnabled="False" Visibility="Visible">
-                Datenproblem(e) erzeugen!
-            </Button>
+            <Button Name="_PushFindingsButton" Margin="5" Click="PushFindings" IsEnabled="False" Visibility="Visible" />
         </StackPanel>
         <ListView Name="_ResultListView" ItemContainerStyle="{StaticResource ItemContStyle}" SelectionMode="Multiple" SelectionChanged="FindingSelected">
             <ListView.ContextMenu>

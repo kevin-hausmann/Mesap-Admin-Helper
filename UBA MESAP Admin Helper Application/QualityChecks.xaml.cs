@@ -176,6 +176,8 @@ namespace UBA.Mesap.AdminHelper
         private void FindingSelected(object sender, SelectionChangedEventArgs e)
         {
             _PushFindingsButton.IsEnabled = _ResultListView.SelectedItems.Count > 0;
+            _PushFindingsButton.Content = _ResultListView.SelectedItems.Count == 1 ? "Ein Datenproblem erzeugen" :
+                _ResultListView.SelectedItems.Count + " Datenprobleme erzeugen";
         }
 
         /// <summary>
