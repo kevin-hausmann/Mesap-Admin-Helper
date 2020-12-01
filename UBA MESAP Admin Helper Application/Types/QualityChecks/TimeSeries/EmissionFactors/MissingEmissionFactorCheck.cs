@@ -10,7 +10,7 @@ namespace UBA.Mesap.AdminHelper.Types.QualityChecks
 
         public override TimeSpan EstimatedExecutionTimePerElement => TimeSpan.FromMilliseconds(35);
         
-        protected override short StartYear => 2016;
+        protected override short StartYear => 2019;
         protected override short EndYear => 2050;
         
         protected override int[,] FindWorkloadFilter => new int[,]

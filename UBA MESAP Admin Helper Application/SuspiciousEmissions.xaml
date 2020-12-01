@@ -20,10 +20,10 @@
                 Jahr:
             </Label>
             <ComboBox Name="_YearSelect" IsEditable="False" VerticalAlignment="Center" SelectedIndex="1">
-                <ComboBoxItem>2015</ComboBoxItem>
-                <ComboBoxItem>2016</ComboBoxItem>
-                <ComboBoxItem>2017</ComboBoxItem>
                 <ComboBoxItem>2018</ComboBoxItem>
+                <ComboBoxItem>2019</ComboBoxItem>
+                <ComboBoxItem>2020</ComboBoxItem>
+                <ComboBoxItem>2021</ComboBoxItem>
             </ComboBox>
             <Label Margin="5">
                 Raumbezug:
